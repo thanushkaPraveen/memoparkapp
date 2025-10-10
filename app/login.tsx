@@ -1,23 +1,54 @@
 // app/login.tsx
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/colors';
+import { useAuthStore } from '../features/auth/store';
+import axiosClient from '../lib/axios';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false); 
   const router = useRouter();  
 
-  const handleLogin = () => {
+  // login action from the Zustand store
+  const { login } = useAuthStore();
+
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password.');
       return;
     }
-    console.log('Logging in with:', email, password);
-    // On success, you will navigate to the main app
-    // router.replace('/(tabs)/home'); 
+
+    console.log('Attempting to log in with:', email, password);
+    setIsLoading(true); 
+
+    try {
+      // API call
+      const response = await axiosClient.post('/auth/login', {
+        user_email: email, 
+        user_password: password, 
+      });
+
+      // Flask API returns
+      const { token, user } = response.data;
+
+      // Update the global state with user data and token
+      login(user, token);
+      
+      console.log('Logging in with:', email, password);
+      // Navigate to the main app on success
+      router.replace('/home');
+
+    } catch (error: any) {
+      // Handle login errors 
+      const errorMessage = error.response?.data?.message || 'An unexpected error occurred.';
+      Alert.alert('Login Failed', errorMessage);
+    } finally {
+      setIsLoading(false); // Stop loading
+    }
   };
 
   return (
@@ -47,7 +78,8 @@ export default function LoginScreen() {
               value={email} 
               onChangeText={setEmail} 
               keyboardType="email-address" 
-              autoCapitalize="none" 
+              autoCapitalize="none"
+              editable={!isLoading}  
             />
           </View>
 
@@ -59,15 +91,22 @@ export default function LoginScreen() {
               placeholderTextColor= {COLORS.placeholderText}
               value={password} 
               onChangeText={setPassword} 
-              secureTextEntry 
+              secureTextEntry
+              editable={!isLoading} 
             />
           </View>
         </View>
 
         {/* Bottom Section with Button and Link */}
         <View style={styles.bottomSection}>
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+          <TouchableOpacity style={[styles.button, isLoading && styles.buttonDisabled]} 
+            onPress={handleLogin}
+            disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <Text style={styles.buttonText}>Login</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -173,5 +212,8 @@ const styles = StyleSheet.create({
     color: COLORS.link, 
     fontSize: 14,
     fontWeight: '500',
+  },
+   buttonDisabled: {
+    backgroundColor: COLORS.gray,
   },
 });

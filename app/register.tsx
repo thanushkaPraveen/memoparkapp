@@ -132,6 +132,7 @@ export default function RegisterScreen() {
                     // Navigate to privacy policy screen
                     // router.push('/privacy-policy');
                     console.log('Navigate to Privacy Policy');
+                    router.replace('/home'); 
                   }}
                 >
                   Privacy Policy.

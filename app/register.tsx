@@ -1,29 +1,44 @@
-// app/register.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/colors';
+import { useAuthStore } from '../features/auth/store';
+import axiosClient from '../lib/axios';
 
 export default function RegisterScreen() {
+  // --- Existing State ---
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showEmergencyContact, setShowEmergencyContact] = useState(false);
-  
-  // Emergency contact fields
   const [contactName, setContactName] = useState('');
   const [relationship, setRelationship] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [emergencyEmail, setEmergencyEmail] = useState('');
   const [allowAlerts, setAllowAlerts] = useState(false);
   
+  // --- New State for Loading ---
+  const [isLoading, setIsLoading] = useState(false);
+  
   const router = useRouter();
+  const { login } = useAuthStore();
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
+    // 1. Validation (remains the same)
     if (!fullName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
@@ -36,9 +51,51 @@ export default function RegisterScreen() {
       Alert.alert('Error', 'Please accept the Privacy Policy.');
       return;
     }
-    console.log('Registering with:', { fullName, email, password });
-    // On success, navigate to login or main app
-    // router.replace('/login');
+
+    setIsLoading(true);
+
+    // 2. Construct the data payload for the API
+    const payload: any = {
+      user_name: fullName,
+      user_email: email,
+      user_password: password,
+    };
+
+    if (showEmergencyContact && contactName) {
+      payload.emergency_contact = {
+        emergency_contact_name: contactName,
+        relation: relationship,
+        emergency_phone_number: mobileNumber,
+        emergency_email: emergencyEmail,
+        is_allow_alerts: allowAlerts ? 1 : 0,
+      };
+    }
+
+    try {
+      // 3. Make the API call to register
+      const registerResponse = await axiosClient.post('/auth/register', payload);
+      const { access_token: token } = registerResponse.data;
+
+      if (!token) {
+        throw new Error('Registration successful, but no token was received.');
+      }
+      
+      // 4. Auto-login the user after successful registration
+      axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const profileResponse = await axiosClient.get('/auth/profile');
+      const user = profileResponse.data;
+      
+      await login(user, token);
+
+      // 5. Navigate to the main app
+      router.replace('/home');
+
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'An unexpected error occurred.';
+      Alert.alert('Registration Failed', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,6 +129,7 @@ export default function RegisterScreen() {
                 value={fullName} 
                 onChangeText={setFullName} 
                 autoCapitalize="words"
+                editable={!isLoading}
               />
             </View>
 
@@ -85,6 +143,7 @@ export default function RegisterScreen() {
                 onChangeText={setEmail} 
                 keyboardType="email-address" 
                 autoCapitalize="none"
+                editable={!isLoading}
               />
             </View>
 
@@ -97,6 +156,7 @@ export default function RegisterScreen() {
                 value={password} 
                 onChangeText={setPassword} 
                 secureTextEntry
+                editable={!isLoading}
               />
             </View>
 
@@ -109,6 +169,7 @@ export default function RegisterScreen() {
                 value={confirmPassword} 
                 onChangeText={setConfirmPassword} 
                 secureTextEntry
+                editable={!isLoading}
               />
             </View>
 
@@ -167,6 +228,7 @@ export default function RegisterScreen() {
                     value={contactName} 
                     onChangeText={setContactName}
                     autoCapitalize="words"
+                    editable={!isLoading}
                   />
                 </View>
 
@@ -179,6 +241,7 @@ export default function RegisterScreen() {
                     value={relationship} 
                     onChangeText={setRelationship}
                     autoCapitalize="words"
+                    editable={!isLoading}
                   />
                 </View>
 
@@ -191,6 +254,7 @@ export default function RegisterScreen() {
                     value={mobileNumber} 
                     onChangeText={setMobileNumber}
                     keyboardType="phone-pad"
+                    editable={!isLoading}
                   />
                 </View>
 
@@ -205,6 +269,7 @@ export default function RegisterScreen() {
                     onChangeText={setEmergencyEmail}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    editable={!isLoading}
                   />
                 </View>
 
@@ -225,13 +290,19 @@ export default function RegisterScreen() {
               </View>
             )}
           </View>
-
           {/* Bottom Section */}
           <View style={styles.bottomSection}>
-            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <TouchableOpacity 
+            style={[styles.button, isLoading && styles.buttonDisabled]} 
+            onPress={handleRegister}
+            disabled={isLoading}
+            >
+              {isLoading ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
               <Text style={styles.buttonText}>Create account</Text>
+            )}
             </TouchableOpacity>
-
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account? </Text>
               <Link href="/login" asChild>
@@ -386,5 +457,8 @@ const styles = StyleSheet.create({
     color: COLORS.link, 
     fontSize: 14,
     fontWeight: '500',
+  },
+   buttonDisabled: {
+    backgroundColor: COLORS.gray,
   },
 });

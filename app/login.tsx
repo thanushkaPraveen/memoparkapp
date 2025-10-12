@@ -32,18 +32,29 @@ export default function LoginScreen() {
         user_password: password, 
       });
 
-      // Flask API returns
-      const { token, user } = response.data;
+      console.log('API Response Data:', JSON.stringify(response.data, null, 2));
 
-      // Update the global state with user data and token
+      const { access_token: token } = response.data;
+
+      if (!token) {
+        throw new Error('Login successful, but no token was received.');
+      }
+
+      // Use the token to fetch the user's profile
+      axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      const profileResponse = await axiosClient.get('/auth/profile');
+      const user = profileResponse.data;
+
+      // user and token, update the state
       login(user, token);
-      
+
+      // Navigate to the main app
       console.log('Logging in with:', email, password);
-      // Navigate to the main app on success
       router.replace('/home');
 
     } catch (error: any) {
       // Handle login errors 
+      console.log('error :', error);
       const errorMessage = error.response?.data?.message || 'An unexpected error occurred.';
       Alert.alert('Login Failed', errorMessage);
     } finally {

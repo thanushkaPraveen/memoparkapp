@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { COLORS } from '../../constants/colors';
+import axiosClient from '../../lib/axios';
 
 export default function HomeScreen() {
   const mapRef = useRef<MapView>(null);
@@ -31,11 +32,12 @@ export default function HomeScreen() {
 
   // Bottom sheet form states
   const [photo, setPhoto] = useState<string | null>(null);
-  const [whereIsTheCar, setWhereIsTheCar] = useState<'roadside' | 'inside'>('roadside');
-  const [roadsideLevel, setRoadsideLevel] = useState('');
+  const [whereIsTheCar, setWhereIsTheCar] = useState<'outside' | 'inside'>('outside');
   const [insideLevel, setInsideLevel] = useState('');
   const [note, setNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [address, setAddress] = useState<{ name: string; street: string } | null>(null);
+  const [parkingSlot, setParkingSlot] = useState('');
 
   // Request location permission and get current location
   useEffect(() => {
@@ -85,12 +87,26 @@ export default function HomeScreen() {
     setSelectedLocation(coordinate);
   };
 
+  const getAddressFromCoords = async (latitude: number, longitude: number) => {
+    try {
+      const geocoded = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (geocoded.length > 0) {
+        const { name, street } = geocoded[0];
+        setAddress({ name: name || '', street: street || '' });
+      }
+    } catch (error) {
+      console.error('Failed to get address:', error);
+      setAddress({ name: 'Unknown Location', street: '' });
+    }
+  };
+
   // Open bottom sheet
-  const handleSaveLocationPress = () => {
+  const handleSaveLocationPress = async () => {
     if (!selectedLocation) {
       Alert.alert('Error', 'Please select a location on the map.');
       return;
     }
+    await getAddressFromCoords(selectedLocation.latitude, selectedLocation.longitude);
     setShowBottomSheet(true);
   };
 
@@ -151,33 +167,60 @@ export default function HomeScreen() {
     );
   };
 
+    // Placeholder function for image upload
+  const uploadImage = async (uri: string): Promise<{ photo_url: string; photo_s3_key: string }> => {
+    console.log('Simulating image upload for:', uri);
+    //Will upload the file here and get back the real URL and key.
+    // For now, we return mock data.
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+    return {
+      photo_url: 'https://example.com/photos/parking_image.jpg',
+      photo_s3_key: `user_uploads/1/parking_${Date.now()}.jpg`,
+    };
+  };
+
   // Handle save
   const handleSave = async () => {
-    if (!selectedLocation) return;
+    if (!selectedLocation || !address) return;
 
     setIsSaving(true);
 
     try {
-      const parkingData = {
-        latitude: selectedLocation.latitude,
-        longitude: selectedLocation.longitude,
-        photo,
-        location_type: whereIsTheCar,
-        roadside_level: whereIsTheCar === 'roadside' ? roadsideLevel : null,
-        inside_level: whereIsTheCar === 'inside' ? insideLevel : null,
-        note,
-        saved_at: new Date().toISOString(),
+      let imageDetails: { photo_url: string | null; photo_s3_key: string | null } = {
+        photo_url: null,
+        photo_s3_key: null,
       };
 
-      console.log('Saving parking data:', parkingData);
+      //Upload the image if one was selected
+      if (photo) {
+        imageDetails = await uploadImage(photo);
+      }
 
-      // TODO: Send to API
-      // await axiosClient.post('/parking/save', parkingData);
+      // Construct the final payload for the /parking endpoint
+      const parkingData = {
+        parking_latitude: selectedLocation.latitude,
+        parking_longitude: selectedLocation.longitude,
+        parking_location_name: address.name,
+        parking_address: address.street,
+        notes: note,
+        parking_type: whereIsTheCar === 'inside' ? 'inside_building' : 'outside',
+        level_floor: whereIsTheCar === 'inside' ? insideLevel : parkingSlot, // Use parkingSlot for outside
+        parking_slot: whereIsTheCar === 'inside' ? parkingSlot : null, // Only send slot for inside
+        photo_url: imageDetails.photo_url,
+        photo_s3_key: imageDetails.photo_s3_key,
+      };
 
-      // Reset form
+      console.log('Sending parking data to API:', parkingData);
+
+      // API call
+      const response = await axiosClient.post('/parking', parkingData);
+      
+      console.log('API save response:', response.data);
+
+      //Reset form and close sheet on success
       setPhoto(null);
-      setRoadsideLevel('');
       setInsideLevel('');
+      setParkingSlot('');
       setNote('');
       setShowBottomSheet(false);
 
@@ -200,40 +243,55 @@ export default function HomeScreen() {
     setShowBottomSheet(false);
   };
 
+  // Safe region calculation to prevent NaN values
+  const getSafeRegion = () => {
+    if (!location?.coords) {
+      return {
+        latitude: 37.78825,
+        longitude: -122.4324,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+    }
+
+    const latitude = location.coords.latitude || 37.78825;
+    const longitude = location.coords.longitude || -122.4324;
+    
+    return {
+      latitude: isNaN(latitude) ? 37.78825 : latitude,
+      longitude: isNaN(longitude) ? -122.4324 : longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    };
+  };
+
   return (
     <View style={styles.container}>
       {/* Map View */}
-      {location && (
-        <MapView
-          ref={mapRef}
-          provider={PROVIDER_GOOGLE}
-          style={styles.map}
-          initialRegion={{
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          mapType="satellite" 
-          onPress={handleMapPress}
-          showsUserLocation
-          showsMyLocationButton={false}
-          showsCompass={true}
-        >
-          {/* Selected location marker */}
-          {selectedLocation && (
-            <Marker
-              coordinate={selectedLocation}
-              title="Parking Location"
-              description="Your car will be parked here"
-            >
-              <View style={styles.markerContainer}>
-                <Ionicons name="location" size={40} color={COLORS.primary} />
-              </View>
-            </Marker>
-          )}
-        </MapView>
-      )}
+      <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
+        initialRegion={getSafeRegion()}
+        mapType="satellite" 
+        onPress={handleMapPress}
+        showsUserLocation
+        showsMyLocationButton={false}
+        showsCompass={true}
+      >
+        {/* Selected location marker */}
+        {selectedLocation && !isNaN(selectedLocation.latitude) && !isNaN(selectedLocation.longitude) && (
+          <Marker
+            coordinate={selectedLocation}
+            title="Parking Location"
+            description="Your car will be parked here"
+          >
+            <View style={styles.markerContainer}>
+              <Ionicons name="location" size={40} color={COLORS.primary} />
+            </View>
+          </Marker>
+        )}
+      </MapView>
 
       {/* Top right buttons */}
       <View style={styles.topRightButtons}>
@@ -318,14 +376,14 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     style={[
                       styles.toggleButton,
-                      whereIsTheCar === 'roadside' && styles.toggleButtonActive,
+                      whereIsTheCar === 'outside' && styles.toggleButtonActive,
                     ]}
-                    onPress={() => setWhereIsTheCar('roadside')}
+                    onPress={() => setWhereIsTheCar('outside')}
                   >
                     <Text
                       style={[
                         styles.toggleButtonText,
-                        whereIsTheCar === 'roadside' && styles.toggleButtonTextActive,
+                        whereIsTheCar === 'outside' && styles.toggleButtonTextActive,
                       ]}
                     >
                       Roadside
@@ -352,26 +410,34 @@ export default function HomeScreen() {
 
               {/* Level/Floor */}
               <View style={styles.levelsRow}>
-                <View style={styles.levelInput}>
-                  <Text style={styles.label}>Level / Floor</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={roadsideLevel}
-                    onChangeText={setRoadsideLevel}
-                    placeholder="e.g., Ground"
-                    placeholderTextColor={COLORS.placeholderText}
-                  />
-                </View>
-                <View style={styles.levelInput}>
-                  <Text style={styles.label}>Level / Floor</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={insideLevel}
-                    onChangeText={setInsideLevel}
-                    placeholder="e.g., Level 2"
-                    placeholderTextColor={COLORS.placeholderText}
-                  />
-                </View>
+                {whereIsTheCar === 'outside' && (
+                  <View style={styles.levelInput}>
+                    <Text style={styles.label}>Street Level / Area</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={parkingSlot}
+                      onChangeText={setParkingSlot}
+                      placeholder="e.g., Near the red mailbox"
+                    />
+                  </View>
+                )}
+                {whereIsTheCar === 'inside' && (
+                  <>
+                    <View style={styles.levelInput}>
+                      <Text style={styles.label}>Level / Floor</Text>
+                      <TextInput style={styles.input} value={insideLevel} onChangeText={setInsideLevel} placeholder="e.g., 1" />
+                    </View>
+                    <View style={styles.levelInput}>
+                      <Text style={styles.label}>Parking Slot</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={parkingSlot}
+                        onChangeText={setParkingSlot}
+                        placeholder="e.g., D-42"
+                      />
+                    </View>
+                  </>
+                )}
               </View>
 
               {/* Note */}
@@ -424,6 +490,7 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+    minHeight: 200, // Prevent zero height
   },
   markerContainer: {
     alignItems: 'center',
@@ -431,7 +498,7 @@ const styles = StyleSheet.create({
   },
   topRightButtons: {
     position: 'absolute',
-    top: 20,
+    top: Platform.OS === 'ios' ? 60 : 20, // Safe area adjustment
     right: 16,
     gap: 12,
   },
@@ -510,18 +577,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 12,
     marginBottom: 8,
-  },
-  miniMapContainer: {
-    height: 150,
-    marginHorizontal: 20,
-    marginTop: 12,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-  },
-  miniMap: {
-    flex: 1,
   },
   bottomSheetContent: {
     padding: 20,

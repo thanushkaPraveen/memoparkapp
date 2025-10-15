@@ -9,10 +9,23 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "config": {
+        "googleMapsApiKey": "AIzaSyCOMRs9LVkFe36qYr0v1u6g5_DW-DSCYNA"
+      },
       "supportsTablet": true,
-      "bundleIdentifier": "com.thanushka.MemoParkApp"
+      "bundleIdentifier": "com.thanushka.MemoParkApp",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to save and find parking spots.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses your location to save and find parking spots even when the app is in the background.",
+        "NSLocationAlwaysUsageDescription": "This app uses your location to save and find parking spots."
+      }
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCOMRs9LVkFe36qYr0v1u6g5_DW-DSCYNA"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -36,6 +49,19 @@
           "resizeMode": "contain",
           "imageWidth": 200,
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+      "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow MemoParkApp to use your location to save parking spots."
+        }
+      ],
+      [
+      "expo-image-picker",
+        {
+          "photosPermission": "Allow MemoParkApp to access your photos to save parking spot images.",
+          "cameraPermission": "Allow MemoParkApp to access your camera to take parking spot photos."
         }
       ]
     ],

@@ -167,18 +167,6 @@ export default function HomeScreen() {
     );
   };
 
-    // Placeholder function for image upload
-  const uploadImage = async (uri: string): Promise<{ photo_url: string; photo_s3_key: string }> => {
-    console.log('Simulating image upload for:', uri);
-    //Will upload the file here and get back the real URL and key.
-    // For now, we return mock data.
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-    return {
-      photo_url: 'https://example.com/photos/parking_image.jpg',
-      photo_s3_key: `user_uploads/1/parking_${Date.now()}.jpg`,
-    };
-  };
-
   // Handle save
   const handleSave = async () => {
     if (!selectedLocation || !address) return;
@@ -186,17 +174,7 @@ export default function HomeScreen() {
     setIsSaving(true);
 
     try {
-      let imageDetails: { photo_url: string | null; photo_s3_key: string | null } = {
-        photo_url: null,
-        photo_s3_key: null,
-      };
-
-      //Upload the image if one was selected
-      if (photo) {
-        imageDetails = await uploadImage(photo);
-      }
-
-      // Construct the final payload for the /parking endpoint
+      // Construct the initial parking data WITHOUT any photo details
       const parkingData = {
         parking_latitude: selectedLocation.latitude,
         parking_longitude: selectedLocation.longitude,
@@ -204,20 +182,38 @@ export default function HomeScreen() {
         parking_address: address.street,
         notes: note,
         parking_type: whereIsTheCar === 'inside' ? 'inside_building' : 'outside',
-        level_floor: whereIsTheCar === 'inside' ? insideLevel : parkingSlot, // Use parkingSlot for outside
-        parking_slot: whereIsTheCar === 'inside' ? parkingSlot : null, // Only send slot for inside
-        photo_url: imageDetails.photo_url,
-        photo_s3_key: imageDetails.photo_s3_key,
+        level_floor: whereIsTheCar === 'inside' ? insideLevel : parkingSlot,
+        parking_slot: whereIsTheCar === 'inside' ? parkingSlot : null,
       };
 
-      console.log('Sending parking data to API:', parkingData);
-
-      // API call
+      // Make the first API call to save the parking details and get the new event ID
       const response = await axiosClient.post('/parking', parkingData);
-      
-      console.log('API save response:', response.data);
+      const savedEvent = response.data;
+      const parkingEventId = savedEvent.parking_events_id;
 
-      //Reset form and close sheet on success
+      // If a photo was selected, upload it using the new ID
+      if (photo) {
+        console.log('Uploading photo for event ID:', parkingEventId);
+        
+        const formData = new FormData();
+        const filename = photo.split('/').pop() || 'photo.jpg';
+        const fileType = filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
+
+        formData.append('photo', {
+          uri: photo,
+          name: filename,
+          type: fileType,
+        } as any);
+
+        // Make the second API call to the specific photo upload endpoint
+        await axiosClient.post(`/parking/${parkingEventId}/photo`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
+
+      // Reset the form and close the sheet on final success
       setPhoto(null);
       setInsideLevel('');
       setParkingSlot('');
@@ -225,8 +221,9 @@ export default function HomeScreen() {
       setShowBottomSheet(false);
 
       Alert.alert('Success', 'Your parking location has been saved!');
-    } catch (error) {
-      console.error('Error saving parking:', error);
+
+    } catch (error: any) {
+      console.error('Error saving parking:', error.response?.data || error.message);
       Alert.alert('Error', 'Failed to save parking location. Please try again.');
     } finally {
       setIsSaving(false);
@@ -273,7 +270,7 @@ export default function HomeScreen() {
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={getSafeRegion()}
-        mapType="satellite" 
+        // mapType="satellite" 
         onPress={handleMapPress}
         showsUserLocation
         showsMyLocationButton={false}

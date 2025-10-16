@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { COLORS } from '../../constants/colors';
+import { ParkingEvent, useParkingStore } from '../../features/parking/store';
 import axiosClient from '../../lib/axios';
 
 export default function HomeScreen() {
@@ -38,6 +39,9 @@ export default function HomeScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [address, setAddress] = useState<{ name: string; street: string } | null>(null);
   const [parkingSlot, setParkingSlot] = useState('');
+
+  // Get the parking session data and loading state
+  const { activeParkingSession, isLoading , fetchActiveParkingSession } = useParkingStore();
 
   // Request location permission and get current location
   useEffect(() => {
@@ -61,6 +65,37 @@ export default function HomeScreen() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (isLoading) {
+      console.log('Fetching active parking session...');
+      return;
+    }
+
+    if (activeParkingSession) {
+      // Rule 1: Check for an empty object
+      if (Object.keys(activeParkingSession).length === 0) {
+        console.log('Received an empty object, no active session.');
+      } 
+      // Rule 2: Print the full object if it has data
+      else {
+        const session = activeParkingSession as ParkingEvent; // Type cast for safety
+        console.log('Full active session object:', JSON.stringify(session, null, 2));
+
+        // Rule 4: Check if landmarks are empty
+        if (session.landmarks && session.landmarks.length === 0) {
+          console.log('Landmarks are empty, no landmarks added.');
+        }
+
+        // Rule 3: Check if score is null
+        if (session.score === null) {
+          console.log('Score is null, no score data available.');
+        }
+      }
+    } else {
+      console.log('No active parking session found (session is null).');
+    }
+  }, [activeParkingSession, isLoading]);
 
   // Center map on current location
   const centerOnUserLocation = async () => {
@@ -221,6 +256,8 @@ export default function HomeScreen() {
       setShowBottomSheet(false);
 
       Alert.alert('Success', 'Your parking location has been saved!');
+
+      await fetchActiveParkingSession();
 
     } catch (error: any) {
       console.error('Error saving parking:', error.response?.data || error.message);

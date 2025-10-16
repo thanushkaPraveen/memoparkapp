@@ -3,16 +3,21 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../../constants/colors';
 import { useAuthStore } from '../../features/auth/store';
+import { useParkingStore } from '../../features/parking/store';
 
 export default function ProfileScreen() {
   const router = useRouter();
   // Get the logout action and user data from your Zustand store
   const { logout, user } = useAuthStore();
+  const clearActiveParking = useParkingStore((state) => state.clearActiveParkingSession);
 
   const handleLogout = async () => {
     // Call the logout action from your store
     // This will clear the state and remove the token from the keychain
     await logout();
+
+    // CLEAR the parking session state on logout
+    clearActiveParking();
     
     // Navigate the user back to the login screen
     // 'replace' is used to prevent the user from going back to the profile screen

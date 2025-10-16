@@ -18,7 +18,7 @@ interface AuthState {
   login: (userData: User, token: string) => Promise<void>; 
   logout: () => Promise<void>; 
   setUser: (userData: User) => void;
-  initializeAuth: () => Promise<void>;
+  initializeAuth: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -82,12 +82,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         // If successful, log the user in
         get().login(user, token);
+        return true;
       }
+      return false;
     } catch (error) {
       console.log('No valid session found or session expired:', error);
       // If token is invalid or fetching profile fails, do nothing.
       // The user will be treated as logged out.
       get().logout(); // Optional: ensure keychain is cleared on auth error
+      return false;
     }
   },
 }));

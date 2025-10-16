@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, Touchable
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/colors';
 import { useAuthStore } from '../features/auth/store';
+import { useParkingStore } from '../features/parking/store';
 import axiosClient from '../lib/axios';
 
 export default function LoginScreen() {
@@ -12,6 +13,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false); 
   const router = useRouter();  
+  const fetchActiveParking = useParkingStore((state) => state.fetchActiveParkingSession); 
 
   // login action from the Zustand store
   const { login } = useAuthStore();
@@ -47,6 +49,9 @@ export default function LoginScreen() {
 
       // user and token, update the state
       login(user, token);
+
+      //FETCH PARKING DATA right after logging in
+      await fetchActiveParking();
 
       // Navigate to the main app
       console.log('Logging in with:', email, password);

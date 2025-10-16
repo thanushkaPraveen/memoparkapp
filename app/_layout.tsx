@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../features/auth/store';
+import { useParkingStore } from '../features/parking/store';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -16,12 +17,21 @@ export default function RootLayout() {
 
   const [isAuthInitialized, setAuthInitialized] = useState(false);
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const fetchActiveParking = useParkingStore((state) => state.fetchActiveParkingSession); // 2. Get the fetch action
 
   useEffect(() => {
     const prepareApp = async () => {
       try {
-        // Run the authentication check
-        await initializeAuth();
+
+        // This ensures the token is retrieved and the Axios header is set.
+        // Wait to authentication to be initialized and get the result
+        const isAuthenticated = await initializeAuth();
+
+        // ONLY if the user is authenticated, fetch the active parking data
+        if (isAuthenticated) {
+          await fetchActiveParking();
+        }
+
       } catch (e) {
         console.warn(e);
       } finally {

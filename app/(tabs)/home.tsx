@@ -82,14 +82,22 @@ export default function HomeScreen() {
         const session = activeParkingSession as ParkingEvent; // Type cast for safety
         console.log('Full active session object:', JSON.stringify(session, null, 2));
 
-        // Rule 4: Check if landmarks are empty
-        if (session.landmarks && session.landmarks.length === 0) {
-          console.log('Landmarks are empty, no landmarks added.');
-        }
-
         // Rule 3: Check if score is null
         if (session.score === null) {
           console.log('Score is null, no score data available.');
+        }
+        else {
+          console.log('Score is available');
+          
+        }
+
+        // Rule 4: Check if landmarks are empty
+        if (session.landmarks && session.landmarks.length === 0) {
+          console.log('Landmarks are empty, no landmarks added.');
+
+        }
+        else{
+             console.log('Landmarks are availabl.');
         }
       }
     } else {

@@ -1,3 +1,4 @@
+// features/parking/store.ts
 import { create } from 'zustand';
 import axiosClient from '../../lib/axios';
 
@@ -94,5 +95,5 @@ export const useParkingStore = create<ParkingState>((set) => ({
   clearActiveParkingSession: () => {
     set({ activeParkingSession: null });
   },
-  
+
 }));

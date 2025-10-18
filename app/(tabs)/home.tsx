@@ -79,13 +79,21 @@ export default function HomeScreen() {
     const startLocationTracking = async () => {
       if (isNavigating && !isAddingLandmark) {
         try {
+
+          // Ensure to have location permission before watching
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+            console.error('Location permission not granted for tracking');
+            return;
+          }
+
           locationSubscription = await Location.watchPositionAsync(
             {
               accuracy: Location.Accuracy.High,
               timeInterval: 5000, // Update every 5 seconds
               distanceInterval: 10, // Update every 10 meters
             },
-            (newLocation) => {
+            async (newLocation) => {
               setLocation(newLocation);
               
               // Check if user reached the car
@@ -97,6 +105,26 @@ export default function HomeScreen() {
                   session.parking_latitude,
                   session.parking_longitude
                 );
+
+                // Check landmarks achievement (within 20 meters of landmark)
+                if (session.landmarks && session.landmarks.length > 0) {
+                  for (const landmark of session.landmarks) {
+                    if (!landmark.is_achieved && landmark.landmark_latitude && landmark.landmark_longitude) {
+                      const distanceToLandmark = calculateDistance(
+                        newLocation.coords.latitude,
+                        newLocation.coords.longitude,
+                        landmark.landmark_latitude,
+                        landmark.landmark_longitude
+                      );
+
+                      // If within 20 meters of landmark, mark as achieved
+                      if (distanceToLandmark < 20) {
+                        console.log(`Achieved landmark: ${landmark.location_name}`);
+                        await handleAchieveLandmark(session.parking_events_id, landmark.landmarks_id);
+                      }
+                    }
+                  }
+                }
 
                 // If within 10 meters of car
                 if (distance < 10) {
@@ -128,7 +156,7 @@ export default function HomeScreen() {
         locationSubscription.remove();
       }
     };
-  }, [isNavigating, isAddingLandmark]);
+  }, [isNavigating, isAddingLandmark, activeParkingSession]);
 
   // Request location permission and get current location
   useEffect(() => {
@@ -187,7 +215,8 @@ export default function HomeScreen() {
         } else {
           // Has landmarks - show navigation mode
           console.log('Has landmarks - show navigation with landmarks');
-          handleFindMyCar();
+          // handleFindMyCar();
+          setIsNavigating(true)
         }
       }
     }
@@ -557,6 +586,31 @@ export default function HomeScreen() {
     }
     finally {
       setIsSaving(false);
+    }
+  };
+
+  // Handle landmark achievement
+  const handleAchieveLandmark = async (parkingEventId: number, landmarkId: number) => {
+    try {
+      console.log(`Marking landmark ${landmarkId} as achieved...`);
+      
+      const response = await axiosClient.patch(
+        `/parking/${parkingEventId}/landmarks/${landmarkId}`,
+        { is_achieved: true }
+      );
+
+      console.log('Landmark achieved:', response.data);
+
+      // Refresh the session to update UI
+      await fetchActiveParkingSession();
+
+      // Optional: Show a brief success message
+      // Alert.alert('Landmark Reached!', `You passed ${response.data.location_name || 'landmark'}!`);
+
+    } catch (error: any) {
+      console.error('Error achieving landmark:', error);
+      console.error('Error response:', error.response?.data);
+      // Don't show error alert to user - this is a background operation
     }
   };
 

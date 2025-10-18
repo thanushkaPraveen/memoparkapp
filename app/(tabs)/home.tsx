@@ -18,11 +18,12 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
+import { GOOGLE_MAPS_API_KEY_1 } from "../../constants/ appConstants";
 import { COLORS } from '../../constants/colors';
 import { ParkingEvent, useParkingStore } from '../../features/parking/store';
 import axiosClient from '../../lib/axios';
 
-const GOOGLE_MAPS_API_KEY = '***'; 
+const GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_API_KEY_1; 
 
 export default function HomeScreen() {
   const mapRef = useRef<MapView>(null);
@@ -145,6 +146,9 @@ export default function HomeScreen() {
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,
         });
+
+        // Center map on current location
+        centerOnUserLocation();
       } catch (error) {
         console.error('Error getting location:', error);
         Alert.alert('Error', 'Failed to get your location.');
@@ -500,6 +504,14 @@ export default function HomeScreen() {
 
     if (!hasActiveSession()) return;
 
+    // Prevent double-calling
+    if (isSaving) {
+      console.log('Already saving landmarks, please wait...');
+      return;
+    }
+
+    setIsSaving(true);
+
     try {
       const session = activeParkingSession as ParkingEvent;
       
@@ -519,13 +531,14 @@ export default function HomeScreen() {
         landmarksData
       );
 
+      // Clearing the temp landmarks immediately after successful save
       setTempLandmarks([]);
       setIsAddingLandmark(false);
       setIsNavigating(false);
 
       Alert.alert(
         'Success',
-        `${tempLandmarks.length} landmark${tempLandmarks.length > 1 ? 's' : ''} saved successfully!`,
+        `${landmarksData.landmarks.length} landmark${landmarksData.landmarks.length > 1 ? 's' : ''} saved successfully!`,
         [
           {
             text: 'OK',
@@ -541,6 +554,9 @@ export default function HomeScreen() {
       console.error('Error saving landmarks:', error);
       console.error('Error response:', error.response?.data);
       Alert.alert('Error', error.response?.data?.message || 'Failed to save landmarks.');
+    }
+    finally {
+      setIsSaving(false);
     }
   };
 

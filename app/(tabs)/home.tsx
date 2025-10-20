@@ -760,10 +760,33 @@ export default function HomeScreen() {
     };
   };
 
- const taponScoreBtnClose = () => {
-  setShowScoreModal(false);
-  handleCompletedParking('retrieved');
-};
+  const taponScoreBtnClose = () => {
+    setShowScoreModal(false);
+    handleCompletedParking('retrieved');
+  };
+
+  const handleEndNavigation = async (): Promise<void> => {
+    Alert.alert(
+      'End Navigation',
+      'Are you sure you want to end this navigation session?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'End Session',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsNavigating(false);
+              await handleCompletedParking('expired');
+            } catch (error) {
+              console.error('Error ending navigation:', error);
+              Alert.alert('Error', 'Failed to end navigation session.');
+            }
+          },
+        },
+      ],
+    );
+  };
 
 
   const session = getActiveSession();
@@ -982,6 +1005,19 @@ export default function HomeScreen() {
             <Text style={styles.doneLandmarkButtonText}>
               {tempLandmarks.length === 0 ? 'Add Some' : 'Save All'}
             </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* End Session Button during navigation */}
+      {isNavigating && !isAddingLandmark && (
+        <View style={styles.endSessionButtonContainer}>
+          <TouchableOpacity 
+            style={styles.endSessionButton} 
+            onPress={handleEndNavigation}
+          >
+            <Ionicons name="stop-circle" size={20} color={COLORS.white} />
+            <Text style={styles.endSessionButtonText}>End Session</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -1733,4 +1769,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.white,
   },
+  endSessionButtonContainer: {
+  position: 'absolute',
+  bottom: 30,
+  alignSelf: 'center',
+  zIndex: 10,
+},
+endSessionButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#FF5252',
+  paddingHorizontal: 20,
+  paddingVertical: 12,
+  borderRadius: 25,
+  gap: 8,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  elevation: 6,
+},
+endSessionButtonText: {
+  color: COLORS.white,
+  fontSize: 15,
+  fontWeight: '600',
+},
 });

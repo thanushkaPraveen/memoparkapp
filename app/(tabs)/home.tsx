@@ -16,7 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import { GOOGLE_MAPS_API_KEY_1 } from "../../constants/ appConstants";
 import { COLORS } from '../../constants/colors';
@@ -270,7 +270,6 @@ export default function HomeScreen() {
     return { name: 'Unknown Location', street: '' };
   };
 
-
   const handleSaveLocationPress = async () => {
     if (!selectedLocation) {
       Alert.alert('Error', 'Please select a location on the map.');
@@ -384,8 +383,25 @@ export default function HomeScreen() {
     }
   };
 
+  const validateCoordinates = (lat: number, lon: number): boolean => {
+    return (
+      !isNaN(lat) && 
+      !isNaN(lon) && 
+      lat >= -90 && 
+      lat <= 90 && 
+      lon >= -180 && 
+      lon <= 180
+    );
+  };
+
   const handleSaveParking = async () => {
     if (!selectedLocation || !address) return;
+
+    // Validate coordinates before saving
+    if (!validateCoordinates(selectedLocation.latitude, selectedLocation.longitude)) {
+      Alert.alert('Error', 'Invalid location coordinates. Please try selecting again.');
+      return;
+    }
 
     setIsSaving(true);
 
@@ -440,6 +456,28 @@ export default function HomeScreen() {
   };
 
   const handleFindMyCar = () => {
+
+    if (!location || !hasActiveSession()) {
+      Alert.alert('Error', 'Unable to start navigation. Location not available.');
+      return;
+    }
+    
+    const session = activeParkingSession as ParkingEvent;
+    
+    // Log coordinates for debugging
+    console.log('Navigation Start Debug:', {
+      userLat: location.coords.latitude,
+      userLon: location.coords.longitude,
+      carLat: session.parking_latitude,
+      carLon: session.parking_longitude,
+    });
+    
+    // Validate coordinates
+    if (!validateCoordinates(session.parking_latitude, session.parking_longitude)) {
+      Alert.alert('Error', 'Invalid parking location coordinates.');
+      return;
+    }
+
     setIsNavigating(true);
     setShowParkingDetailsModal(false);
     setEstimatedTime(null); // Reset time
@@ -615,19 +653,29 @@ export default function HomeScreen() {
   };
 
   // Calculate distance between two coordinates in meters
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371e3; // Earth's radius in meters
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const φ1 = (lat1 * Math.PI) / 180; // Convert to radians
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-              Math.cos(φ1) * Math.cos(φ2) *
-              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const a = 
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * 
+      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    return R * c; // Distance in meters
+    const distance = R * c; // Distance in meters
+    
+    // Add validation to ensure reasonable distance
+    if (isNaN(distance) || distance < 0 || distance > 20000000) {
+      console.warn('Invalid distance calculated:', { lat1, lon1, lat2, lon2, distance });
+      return 0;
+    }
+    
+    return distance;
   };
 
   const handleUpdateParking = () => {
@@ -781,30 +829,82 @@ export default function HomeScreen() {
 
         {/* Navigation route - Walking mode */}
         {isNavigating && location && session && (
-          <MapViewDirections
-            origin={{
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-            }}
-            destination={{
-              latitude: session.parking_latitude,
-              longitude: session.parking_longitude,
-            }}
-            apikey={GOOGLE_MAPS_API_KEY}
-            strokeWidth={5}
-            strokeColor={COLORS.primary}
-            mode="WALKING"
-            onReady={(result) => {
-              setEstimatedTime(Math.ceil(result.duration));
-              setWalkingDistance(result.distance);
-              console.log(`Walking distance: ${result.distance.toFixed(2)} km`);
-              console.log(`Walking time: ${Math.ceil(result.duration)} minutes`);
-            }}
-            onError={(errorMessage) => {
-              console.error('Directions error:', errorMessage);
-            }}
-          />
-        )}
+  <>
+    {/* First try with WALKING mode */}
+    <MapViewDirections
+      origin={{
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      }}
+      destination={{
+        latitude: session.parking_latitude,
+        longitude: session.parking_longitude,
+      }}
+      apikey={GOOGLE_MAPS_API_KEY}
+      strokeWidth={5}
+      strokeColor={COLORS.primary}
+      mode="WALKING"
+      onReady={(result) => {
+        setEstimatedTime(Math.ceil(result.duration));
+        setWalkingDistance(result.distance);
+        console.log(`Walking distance: ${result.distance.toFixed(2)} km`);
+        console.log(`Walking time: ${Math.ceil(result.duration)} minutes`);
+      }}
+      onError={(errorMessage) => {
+        console.log('Directions API error, using fallback:', errorMessage);
+        
+        // Use fallback calculation with corrected distance function
+        if (location && session) {
+          const straightDistance = calculateDistance(
+            location.coords.latitude,
+            location.coords.longitude,
+            session.parking_latitude,
+            session.parking_longitude
+          );
+          
+          // Only use fallback if distance is reasonable (< 100km)
+          if (straightDistance > 0 && straightDistance < 100000) {
+            // Average walking speed: 1.4 m/s or 5 km/h
+            const estimatedMinutes = Math.ceil(straightDistance / 1.4 / 60);
+            setEstimatedTime(estimatedMinutes);
+            setWalkingDistance(straightDistance / 1000); // Convert to km
+            
+            console.log(`Fallback - Distance: ${(straightDistance/1000).toFixed(2)}km, Time: ${estimatedMinutes} min`);
+          } else {
+            console.error('Invalid coordinates or unreasonable distance');
+            setEstimatedTime(null);
+            setWalkingDistance(null);
+          }
+        }
+      }}
+      // Add these props to help with iOS compatibility
+      resetOnChange={false}
+      optimizeWaypoints={false}
+      splitWaypoints={false}
+      timePrecision="now"
+      precision="high"
+    />
+    
+    {/* Fallback: Draw a straight line if no route is available */}
+    {!estimatedTime && (
+      <Polyline
+        coordinates={[
+          {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          },
+          {
+            latitude: session.parking_latitude,
+            longitude: session.parking_longitude,
+          },
+        ]}
+        strokeColor={COLORS.primary}
+        strokeWidth={3}
+        lineDashPattern={[10, 10]} // Dashed line to indicate it's not a real route
+      />
+    )}
+  </>
+)}
       </MapView>
 
       {/* Top right buttons */}

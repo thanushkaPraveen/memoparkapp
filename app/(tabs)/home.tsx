@@ -127,7 +127,7 @@ export default function HomeScreen() {
                 }
 
                 // If within 10 meters of car
-                if (distance < 10) {
+                if (distance < 10 && session.status === 'retrieving') {
                   Alert.alert(
                     'Arrived!',
                     'You have reached your car!',
@@ -209,7 +209,7 @@ export default function HomeScreen() {
         }
 
         // No landmarks yet - show parking details
-        if (session.landmarks && session.landmarks.length === 0) {
+        if (session.landmarks && session.landmarks.length === 0 && session.status == 'active') {
           console.log('No landmarks - show parking details');
           setShowParkingDetailsModal(true);
         } else {
@@ -345,43 +345,52 @@ export default function HomeScreen() {
 
   
 
-  const handleCompletedParking = async (status?: 'retrieved' | 'expired') => {
+  const handleCompletedParking = async (status?: 'retrieving' | 'retrieved' | 'expired') => {
+  if (!activeParkingSession) {
+    console.error("No active parking session to complete.");
+    return;
+  }
+
+  try {
+    const session = activeParkingSession as ParkingEvent;
     
-    if (!activeParkingSession) {
-      console.error("No active parking session to complete.");
+    // Don't update if already in final state
+    if (session.status === 'retrieved' || session.status === 'expired') {
+      console.log('Session already completed');
       return;
     }
 
-    try {
-      const session = activeParkingSession as ParkingEvent;
+    const parkingData = {
+      status: status || 'expired' // Default to expired if no status provided
+    };
 
-      const parkingData = {
-        status: status == 'retrieved' ? 'retrieved' : 'expired' ,
-      };
+    const response = await axiosClient.put(`/parking/${session.parking_events_id}`, parkingData);
+    const updatedEvent = response.data;
 
-      // Corrected URL: Use backticks and the event's ID
-      const response = await axiosClient.put(`/parking/${session.parking_events_id}`, parkingData);
-      const updatedEvent = response.data;
+    console.log('Parking event updated:', updatedEvent);
 
-      // You can add logic here to handle the successful update
-      console.log('Parking event updated:', updatedEvent);
-
-      if (status == 'retrieved') {
-        Alert.alert('Success', 'Parking session completed!');
-      }
-      else {
-        Alert.alert('Note', 'Parking session cleared!');
-      }
-
-    } catch (error: any) {
-      console.error('Error updating parking event:', error.response?.data || error.message);
-      Alert.alert('Error', 'Failed to update parking session.');
-    } finally {
-      // You may want to reset saving state or clear the active session here
-      // setIsSaving(false); 
-      await fetchActiveParkingSession();
+    // Show appropriate alerts based on status
+    if (status === 'retrieved') {
+      Alert.alert('Success', 'Parking session completed!');
+    } else if (status === 'expired') {
+      Alert.alert('Note', 'Parking session cleared!');
+    } else if (status === 'retrieving') {
+      console.log('Navigation started - status updated to retrieving');
     }
-  };
+
+  } catch (error: any) {
+    console.error('Error updating parking event:', error.response?.data || error.message);
+    
+    // Only show error for user-initiated actions (not retrieving status)
+    if (status !== 'retrieving') {
+      Alert.alert('Error', 'Failed to update parking session.');
+    }
+    throw error; // Re-throw for handleFindMyCar to catch
+  } finally {
+    await fetchActiveParkingSession();
+  }
+};
+
 
   const validateCoordinates = (lat: number, lon: number): boolean => {
     return (
@@ -444,7 +453,8 @@ export default function HomeScreen() {
       setNote('');
       setShowSaveBottomSheet(false);
 
-      Alert.alert('Success', 'Your parking location has been saved!');
+
+      console.log('Success Your parking location has been saved!')
       await fetchActiveParkingSession();
 
     } catch (error: any) {
@@ -455,7 +465,7 @@ export default function HomeScreen() {
     }
   };
 
-  const handleFindMyCar = () => {
+  const handleFindMyCar = async () => {
 
     if (!location || !hasActiveSession()) {
       Alert.alert('Error', 'Unable to start navigation. Location not available.');
@@ -495,12 +505,25 @@ export default function HomeScreen() {
       });
     }
 
+    //  status to 'retrieving' when navigation starts
+  try {
+    await handleCompletedParking('retrieving');
+    
     Alert.alert(
       'Navigation Started',
       'Follow the walking path to reach your car. The route shows the estimated walking time.',
       [{ text: 'Got it' }]
     );
-  };
+  } catch (error) {
+    console.error('Failed to update retrieving status:', error);
+    // Still start navigation even if status update fails
+    Alert.alert(
+      'Navigation Started',
+      'Follow the walking path to reach your car.',
+      [{ text: 'Got it' }]
+    );
+  }
+};
 
   const handleAddLandmark = () => {
     setIsAddingLandmark(true);
@@ -683,33 +706,27 @@ export default function HomeScreen() {
     Alert.alert('Update', 'Update parking details feature coming soon!');
   };
 
-  const handleClearParking = async () => {
-    Alert.alert(
-      'Clear Parking',
-      'Are you sure you want to end this parking session?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'End Session',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              if (hasActiveSession()) {
-                // const session = activeParkingSession as ParkingEvent;
-                // await axiosClient.put(`/parking/${session.parking_events_id}/end`);
-                // await fetchActiveParkingSession();
-                // Alert.alert('Success', 'Parking session ended.');
-                handleCompletedParking('expired');
-              }
-            } catch (error) {
-              console.error('Error ending session:', error);
-              Alert.alert('Error', 'Failed to end parking session.');
-            }
-          },
+ const handleClearParking = async () => {
+  Alert.alert(
+    'Clear Parking',
+    'Are you sure you want to end this parking session?',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'End Session',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await handleCompletedParking('expired');
+          } catch (error) {
+            console.error('Error ending session:', error);
+            Alert.alert('Error', 'Failed to end parking session.');
+          }
         },
-      ]
-    );
-  };
+      },
+    ]
+  );
+};
 
   const hasActiveSession = () => {
     return activeParkingSession && Object.keys(activeParkingSession).length > 0;
@@ -743,13 +760,11 @@ export default function HomeScreen() {
     };
   };
 
-  const taponScoreBtnClose = () => {
-    setShowScoreModal(false)
-    // console.log('No active session - show map to save location');
-    // setShowParkingDetailsModal(false);
-    // setIsNavigating(false);
-    handleCompletedParking('retrieved');
-  }
+ const taponScoreBtnClose = () => {
+  setShowScoreModal(false);
+  handleCompletedParking('retrieved');
+};
+
 
   const session = getActiveSession();
 

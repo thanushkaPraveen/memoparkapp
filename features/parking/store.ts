@@ -51,7 +51,7 @@ export interface ParkingEvent {
   photo_s3_key: string | null;
   started_at: string;
   ended_at: string | null;
-  status: 'active' | 'completed';
+  status: 'active' | 'retrieving' | 'retrieved' | 'expired';
   landmarks: Landmark[];
   score: Score | null;
 }

@@ -345,7 +345,7 @@ export default function HomeScreen() {
 
   
 
-  const handleCompletedParking = async (status?: 'retrieving' | 'retrieved' | 'expired') => {
+  const handleCompletedParking = async (status?: 'retrieving' | 'retrieved' | 'expired', estimatedTimeSeconds?: number) => {
   if (!activeParkingSession) {
     console.error("No active parking session to complete.");
     return;
@@ -360,9 +360,15 @@ export default function HomeScreen() {
       return;
     }
 
-    const parkingData = {
-      status: status || 'expired' // Default to expired if no status provided
+    const parkingData : any = {
+      status: status || 'expired', // Default to expired if no status provided
     };
+
+    // estimated_time only when status is 'retrieving' and time is available
+    // Add estimated_time only when needed
+    if (status === 'retrieving' && estimatedTimeSeconds && estimatedTimeSeconds > 0) {
+      parkingData.estimated_time = estimatedTimeSeconds;
+    }
 
     const response = await axiosClient.put(`/parking/${session.parking_events_id}`, parkingData);
     const updatedEvent = response.data;
@@ -488,13 +494,27 @@ export default function HomeScreen() {
       return;
     }
 
+    // Calculate estimated time before starting navigation
+    const straightDistance = calculateDistance(
+      location.coords.latitude,
+      location.coords.longitude,
+      session.parking_latitude,
+      session.parking_longitude
+    );
+
+    // Calculate estimated time in seconds (average walking speed: 1.4 m/s)
+    let estimatedTimeInSeconds = 0;
+    if (straightDistance > 0 && straightDistance < 100000) { // Less than 100km
+      estimatedTimeInSeconds = Math.ceil(straightDistance / 1.4); // Convert to seconds
+      const estimatedMinutes = Math.ceil(estimatedTimeInSeconds / 60);
+      setEstimatedTime(estimatedMinutes); // Still set minutes for display
+      setWalkingDistance(straightDistance / 1000); // Convert to km
+    }   
+
     setIsNavigating(true);
     setShowParkingDetailsModal(false);
-    setEstimatedTime(null); // Reset time
-    
-    if (mapRef.current && location && hasActiveSession()) {
-      const session = activeParkingSession as ParkingEvent;
-      
+
+    if (mapRef.current && location) {
       // Fit map to show route with padding
       mapRef.current.fitToCoordinates([
         { latitude: location.coords.latitude, longitude: location.coords.longitude },
@@ -507,13 +527,14 @@ export default function HomeScreen() {
 
     //  status to 'retrieving' when navigation starts
   try {
-    await handleCompletedParking('retrieving');
+    await handleCompletedParking('retrieving', estimatedTimeInSeconds);
     
-    Alert.alert(
-      'Navigation Started',
-      'Follow the walking path to reach your car. The route shows the estimated walking time.',
-      [{ text: 'Got it' }]
-    );
+    // Different message based on estimated time
+    const message = estimatedTimeInSeconds > 0
+      ? `Follow the walking path to reach your car. Estimated time: ${Math.ceil(estimatedTimeInSeconds / 60)} minutes.`
+      : 'Follow the walking path to reach your car.';
+    
+    Alert.alert('Navigation Started', message, [{ text: 'Got it' }]);
   } catch (error) {
     console.error('Failed to update retrieving status:', error);
     // Still start navigation even if status update fails

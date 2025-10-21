@@ -2,9 +2,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { useFocusEffect } from 'expo-router'; // Or '@react-navigation/native'
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  AppState,
+  AppStateStatus,
   Image,
   KeyboardAvoidingView,
   Modal,
@@ -69,8 +72,110 @@ export default function HomeScreen() {
 
   const MAX_LANDMARKS = 4;
 
+   // --- New States & Refs for Screen Tracking ---
+  const [isUserInHomeScreen, setIsInHomeScreen] = useState(false); // Tracks if this screen is focused
+  const isUserInHomeScreenRef = useRef(isUserInHomeScreen); // Ref to track focus status in AppState listener
+  const [navigationScreenTime, setNavigationScreenTime] = useState(0); // Total time screen is viewed during navigation (ms)
+  const focusStartTimeRef = useRef<number | null>(null); // Timestamp when screen gained focus during navigation
+  const [mapViewCount, setMapViewCount] = useState(0);
+
   // Get parking session from store
   const { activeParkingSession, isLoading, fetchActiveParkingSession } = useParkingStore();
+
+// --- Keep Ref updated with State ---
+  useEffect(() => {
+    isUserInHomeScreenRef.current = isUserInHomeScreen;
+  }, [isUserInHomeScreen]);
+
+  // --- Track Screen Focus/Blur ---
+  useFocusEffect(
+    React.useCallback(() => {
+      // Screen came into focus
+      setIsInHomeScreen(true);
+      console.log('Home screen focused');
+
+      if (isNavigating) {
+
+        // --- Increment Map View Count ---
+        setMapViewCount((prevCount) => {
+          const newCount = prevCount + 1;
+          console.log(`Map viewed during navigation. Count: ${newCount}`);
+          return newCount;
+        });
+        
+        focusStartTimeRef.current = Date.now();
+        console.log('Navigation Focus Start:', new Date().toLocaleTimeString());
+      }
+
+      // Screen lost focus (cleanup function)
+      return () => {
+        setIsInHomeScreen(false);
+        console.log('Home screen blurred');
+
+        if (focusStartTimeRef.current !== null) {
+          const duration = Date.now() - focusStartTimeRef.current;
+          setNavigationScreenTime((prevTime) => {
+            const newTotal = prevTime + duration;
+            console.log(`Navigation Focus End. Duration added: ${duration}ms. Total: ${newTotal}ms`);
+            return newTotal;
+          });
+          focusStartTimeRef.current = null; // Reset start time
+        }
+      };
+    }, [isNavigating]) // Re-run effect setup if isNavigating changes while focused
+  );
+
+  // --- Track App Foreground/Background ---
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      console.log('AppState changed to:', nextAppState);
+      // Use the ref here to get the current focus state
+      if (nextAppState === 'active' && isUserInHomeScreenRef.current) {
+        console.log('App resumed to foreground while Home screen is focused.');
+        // If resuming during navigation, restart timer
+        if (isNavigating && focusStartTimeRef.current === null) {
+
+            setMapViewCount((prevCount) => {
+              const newCount = prevCount + 1;
+              console.log(`Map viewed during navigation Restarted. Count: ${newCount}`);
+              return newCount;
+            });
+            
+            focusStartTimeRef.current = Date.now();
+            console.log('Navigation Focus Timer Restarted:', new Date().toLocaleTimeString());
+        }
+      } else if (nextAppState.match(/inactive|background/) && isUserInHomeScreenRef.current) {
+        console.log('App went to background/inactive while Home screen was focused.');
+        // If the app going to background during navigation, stop timer and add duration
+        if (focusStartTimeRef.current !== null) {
+          const duration = Date.now() - focusStartTimeRef.current;
+          setNavigationScreenTime((prevTime) => {
+             const newTotal = prevTime + duration;
+             console.log(`App Backgrounded. Duration added: ${duration}ms. Total: ${newTotal}ms`);
+             return newTotal;
+          });
+          focusStartTimeRef.current = null; // Pause timer
+        }
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, [isNavigating]); //  isNavigating here to correctly handle timer restart
+
+  // --- Capture Final Screen Time if Navigation Ends While Focused ---
+  useEffect(() => {
+    if (!isNavigating && focusStartTimeRef.current !== null) {
+      const duration = Date.now() - focusStartTimeRef.current;
+      setNavigationScreenTime((prevTime) => {
+        const newTotal = prevTime + duration;
+        console.log(`Navigation Ended While Focused. Duration added: ${duration}ms. Final Total: ${newTotal}ms`);
+        // later: might want to send the final 'newTotal' to  backend here
+        return newTotal;
+      });
+      focusStartTimeRef.current = null;
+    }
+  }, [isNavigating]);
 
   // Track location updates during navigation
   useEffect(() => {
@@ -343,8 +448,6 @@ export default function HomeScreen() {
     ]);
   };
 
-  
-
   const handleCompletedParking = async (status?: 'retrieving' | 'retrieved' | 'expired', estimatedTimeSeconds?: number) => {
   if (!activeParkingSession) {
     console.error("No active parking session to complete.");
@@ -368,6 +471,22 @@ export default function HomeScreen() {
     // Add estimated_time only when needed
     if (status === 'retrieving' && estimatedTimeSeconds && estimatedTimeSeconds > 0) {
       parkingData.estimated_time = estimatedTimeSeconds;
+    }
+
+    if (status === 'retrieved' || status === 'expired') {
+      let finalScreenTime = navigationScreenTime;
+      let finalMapViewCount = mapViewCount;
+        // Check if screen was focused when session ended
+        if (focusStartTimeRef.current !== null) {
+            const finalDuration = Date.now() - focusStartTimeRef.current;
+            finalScreenTime += finalDuration;
+            focusStartTimeRef.current = null; // Clear ref
+        }
+        console.log(`Session Ended. Final Navigation Screen Time: ${finalScreenTime}ms`);
+        console.log(`Session Ended. Final final Map View Count: ${finalMapViewCount}ms`);
+
+        parkingData.finalScreenTime = finalScreenTime;
+        parkingData.finalMapViewCount = finalMapViewCount;
     }
 
     const response = await axiosClient.put(`/parking/${session.parking_events_id}`, parkingData);
@@ -511,8 +630,13 @@ export default function HomeScreen() {
       setWalkingDistance(straightDistance / 1000); // Convert to km
     }   
 
+    setNavigationScreenTime(0); // Reset screen time for the new session
+    focusStartTimeRef.current = null; // Ensure start time is reset
+    setMapViewCount(0); // <-- Reset map view count
+
     setIsNavigating(true);
     setShowParkingDetailsModal(false);
+
 
     if (mapRef.current && location) {
       // Fit map to show route with padding
@@ -525,13 +649,13 @@ export default function HomeScreen() {
       });
     }
 
-    //  status to 'retrieving' when navigation starts
+  //  status to 'retrieving' when navigation starts
   try {
     await handleCompletedParking('retrieving', estimatedTimeInSeconds);
     
     // Different message based on estimated time
     const message = estimatedTimeInSeconds > 0
-      ? `Follow the walking path to reach your car. Estimated time: ${Math.ceil(estimatedTimeInSeconds / 60)} minutes.`
+      ? `Follow the walking path to reach your car. The route shows the estimated walking time.`
       : 'Follow the walking path to reach your car.';
     
     Alert.alert('Navigation Started', message, [{ text: 'Got it' }]);

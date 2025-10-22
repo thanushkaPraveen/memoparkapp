@@ -448,7 +448,7 @@ export default function HomeScreen() {
     ]);
   };
 
-  const handleCompletedParking = async (status?: 'retrieving' | 'retrieved' | 'expired', estimatedTimeSeconds?: number) => {
+  const handleCompletedParking = async (status?: 'retrieving' | 'retrieved' | 'expired' | 'score_watched', estimatedTimeSeconds?: number) => {
   if (!activeParkingSession) {
     console.error("No active parking session to complete.");
     return;
@@ -907,7 +907,7 @@ export default function HomeScreen() {
 
   const taponScoreBtnClose = () => {
     setShowScoreModal(false);
-    handleCompletedParking('retrieved');
+    handleCompletedParking('score_watched');
   };
 
   const handleEndNavigation = async (): Promise<void> => {

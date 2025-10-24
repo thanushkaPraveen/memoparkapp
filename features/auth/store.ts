@@ -3,11 +3,21 @@ import * as Keychain from 'react-native-keychain';
 import { create } from 'zustand';
 import axiosClient from '../../lib/axios';
 
+interface EmergencyContact {
+  emergency_id: number;
+  name: string;
+  relation: string;
+  emergency_phone_number: string | null;
+  emergency_email: string | null;     
+  is_allow_alerts: boolean;
+}
+
 // Define the shape of user data
 interface User {
-  id: number;
-  fullName: string;
-  email: string;
+  user_id: number;
+  user_name: string;
+  user_email: string;
+  emergency_contacts?: EmergencyContact[];
 }
 
 // Define the state and actions for store

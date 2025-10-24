@@ -8,4 +8,5 @@ export const COLORS = {
   link: '#007BFF',
   inputBorder: '#E0E0E0',
   placeholderText: '#999999',
+  error: '#f60000ff',
 };

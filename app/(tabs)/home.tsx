@@ -496,7 +496,7 @@ export default function HomeScreen() {
 
     // Show appropriate alerts based on status
     if (status === 'retrieved') {
-      Alert.alert('Success', 'Parking session completed!');
+      // Alert.alert('Success', 'Parking session completed!');
     } else if (status === 'expired') {
       Alert.alert('Note', 'Parking session cleared!');
     } else if (status === 'retrieving') {
@@ -1390,42 +1390,68 @@ export default function HomeScreen() {
 
       {/* Score Modal */}
       <Modal
-        visible={showScoreModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowScoreModal(false)}
-      >
-        <View style={styles.scoreModalContainer}>
-          <View style={styles.scoreModalContent}>
-            {session?.score && (
-              <>
-                <Ionicons name="trophy" size={60} color="#FFD700" />
-                <Text style={styles.scoreTitle}>Your Score</Text>
-                <Text style={styles.scoreValue}>{session.score.task_score}</Text>
-                
-                <View style={styles.scoreDetails}>
-                  <Text style={styles.scoreDetailText}>
-                    Time Factor: {session.score.time_factor}
-                  </Text>
-                  <Text style={styles.scoreDetailText}>
-                    Landmarks: {session.score.landmarks_recalled}/{session.score.no_of_landmarks}
-                  </Text>
-                  <Text style={styles.scoreDetailText}>
-                    Path Performance: {session.score.path_performance}
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.scoreCloseButton}
-                  onPress={taponScoreBtnClose}
-                >
-                  <Text style={styles.scoreCloseButtonText}>Close</Text>
-                </TouchableOpacity>
-              </>
+  visible={showScoreModal}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setShowScoreModal(false)}
+>
+  <View style={styles.scoreModalContainer}>
+    <View style={styles.scoreModalContent}>
+      {session?.score && (
+        <>
+          <Ionicons name="trophy" size={60} color="#FFD700" />
+          <Text style={styles.scoreTitle}>Session Complete!</Text>
+          
+          {/* Score Metrics */}
+          <View style={styles.scoreMetricsContainer}>
+            <View style={styles.scoreMetricRow}>
+              <Text style={styles.scoreMetricLabel}>Time Factor:</Text>
+              <Text style={styles.scoreMetricValue}>
+                {Math.round(session.score.time_factor)}%
+              </Text>
+            </View>
+            
+            <View style={styles.scoreMetricRow}>
+              <Text style={styles.scoreMetricLabel}>Landmark Factor:</Text>
+              <Text style={styles.scoreMetricValue}>
+                {Math.round(session.score.landmark_factor)}%
+              </Text>
+            </View>
+            
+            <View style={styles.scoreMetricRow}>
+              <Text style={styles.scoreMetricLabel}>Landmarks:</Text>
+              <Text style={styles.scoreMetricValue}>
+                {session.score.landmarks_recalled}/{session.score.no_of_landmarks}
+              </Text>
+            </View>
+            
+            {session.score.assistance_points !== undefined && (
+              <View style={styles.scoreMetricRow}>
+                <Text style={styles.scoreMetricLabel}>Map Views:</Text>
+                <Text style={styles.scorePenaltyValue}>
+                  {session.score.assistance_points}
+                </Text>
+              </View>
             )}
           </View>
-        </View>
-      </Modal>
+          
+          <View style={styles.scoreDivider} />
+          
+          {/* Total Score */}
+          <Text style={styles.scoreTotalLabel}>Total Score</Text>
+          <Text style={styles.scoreValue}>{Math.round(session.score.task_score)}</Text>
+          
+          <TouchableOpacity
+            style={styles.scoreCloseButton}
+            onPress={taponScoreBtnClose}
+          >
+            <Text style={styles.scoreCloseButtonText}>Done</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
+  </View>
+</Modal>
     </View>
   );
 }
@@ -1870,23 +1896,76 @@ const styles = StyleSheet.create({
   scoreModalContent: {
     backgroundColor: COLORS.white,
     borderRadius: 20,
-    padding: 32,
+    padding: 28,
     width: '100%',
     maxWidth: 350,
     alignItems: 'center',
   },
   scoreTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: COLORS.dark,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  scoreMetricsContainer: {
+    width: '100%',
+    backgroundColor: COLORS.lightGray,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  scoreMetricRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  scoreMetricLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  scoreMetricValue: {
+    fontSize: 16,
+    color: COLORS.dark,
+    fontWeight: '600',
+  },
+  scorePenaltyValue: {
+    fontSize: 16,
+    color: '#EF4444',
+    fontWeight: '600',
+  },
+  scoreDivider: {
+    width: '80%',
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginBottom: 16,
+  },
+  scoreTotalLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+    marginBottom: 4,
   },
   scoreValue: {
     fontSize: 56,
     fontWeight: '800',
     color: COLORS.primary,
     marginBottom: 24,
+  },
+  scoreCloseButton: {
+    width: '100%',
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scoreCloseButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.white,
   },
   scoreDetails: {
     width: '100%',
@@ -1901,42 +1980,29 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: '500',
   },
-  scoreCloseButton: {
-    width: '100%',
-    height: 50,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scoreCloseButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
   endSessionButtonContainer: {
   position: 'absolute',
   bottom: 30,
   alignSelf: 'center',
   zIndex: 10,
 },
-endSessionButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: '#FF5252',
-  paddingHorizontal: 20,
-  paddingVertical: 12,
-  borderRadius: 25,
-  gap: 8,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 3 },
-  shadowOpacity: 0.3,
-  shadowRadius: 4,
-  elevation: 6,
-},
-endSessionButtonText: {
-  color: COLORS.white,
-  fontSize: 15,
-  fontWeight: '600',
-},
+  endSessionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF5252',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  endSessionButtonText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: '600',
+  },
 });

@@ -31,6 +31,8 @@ interface Score {
   landmarks_recalled: number;
   task_score: number;
   created_at: string;
+  peek_penalty?: number; 
+  calculated_at?: string;
 }
 
 /**

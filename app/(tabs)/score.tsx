@@ -13,10 +13,11 @@ import {
 import { COLORS } from '../../constants/colors';
 import axiosClient from '../../lib/axios';
 
-// Type definitions
+// Type definitions - UPDATED to match backend
 interface ScoreDetails {
   parking_events_id: number;
   time_factor: number;
+  landmark_factor: number;
   landmarks_recalled: number;
   no_of_landmarks: number;
   path_performance: number;
@@ -26,14 +27,10 @@ interface ScoreDetails {
   calculated_at: string;
   parking_location_name?: string;
   parking_address?: string;
-  started_at: string;
-  ended_at: string;
-}
-
-interface ScoreSession {
-  label: string;
-  date?: string;
-  score: ScoreDetails;
+  started_at?: string;
+  ended_at?: string;
+  created_at?: string;
+  assistance_points: number;
 }
 
 export default function ScoreScreen() {
@@ -55,8 +52,8 @@ export default function ScoreScreen() {
       }
       setError(null);
 
-      // Fetch scores from your backend
       const response = await axiosClient.get('/scores');
+      console.log('Scores response:', response.data);
       setScores(response.data);
     } catch (err: any) {
       console.error('Error fetching scores:', err);
@@ -71,43 +68,76 @@ export default function ScoreScreen() {
     fetchScores(true);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) {
+      return 'Date Unknown';
+    }
 
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-      });
+    try {
+      const date = new Date(dateString);
+      
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - date.getTime());
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) {
+        return 'Today';
+      } else if (diffDays === 1) {
+        return 'Yesterday';
+      } else if (diffDays < 7) {
+        return `${diffDays} days ago`;
+      } else {
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        });
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
     }
   };
 
   const getSessionLabel = (score: ScoreDetails, index: number): string => {
     if (index === 0) return 'Latest Session';
-    return formatDate(score.calculated_at);
+    
+    const dateToUse = score.calculated_at || score.ended_at || score.created_at;
+    return formatDate(dateToUse);
   };
 
-  const formatDuration = (seconds: number): string => {
-    if (seconds < 60) return `${seconds}s`;
+  const formatDuration = (seconds: number | null | undefined): string => {
+    if (!seconds || seconds === 0) return '0s';
+    
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const remainingSeconds = Math.round(seconds % 60);
     return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
   };
 
   const renderScoreCard = (score: ScoreDetails, index: number) => {
     const label = getSessionLabel(score, index);
-    const landmarkPercentage = score.no_of_landmarks > 0 
-      ? Math.round((score.landmarks_recalled / score.no_of_landmarks) * 100)
+    
+    const landmarkPercentage = score.landmark_factor !== undefined 
+      ? Math.round(score.landmark_factor)
+      : (score.no_of_landmarks > 0 
+          ? Math.round((score.landmarks_recalled / score.no_of_landmarks) * 100)
+          : 0);
+
+    const landmark_count = score.no_of_landmarks !== undefined && score.no_of_landmarks !== 0 
+    ? `${score.landmarks_recalled}/${score.no_of_landmarks}` 
+    : "0/0";
+
+    // Calculate penalty points for display
+    const peekPenaltyPoints = score.assistance_points || 0;
+    const assistPenaltySeconds = score.assist_penalty || 0;
+    const assistPenaltyPoints = assistPenaltySeconds > 0 
+      ? Math.round(assistPenaltySeconds / 10) 
       : 0;
 
     return (
@@ -117,24 +147,32 @@ export default function ScoreScreen() {
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Time Factor:</Text>
-            <Text style={styles.statValue}>{Math.round(score.time_factor)}%</Text>
+            <Text style={styles.statValue}>
+              {Math.round(score.time_factor || 0)}%
+            </Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Landmark Factor:</Text>
-            <Text style={styles.statValue}>{landmarkPercentage}%</Text>
+            <Text style={styles.statLabel}>Landmarks:</Text>
+            <Text style={styles.statValue}>{landmark_count} </Text>
           </View>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Peek Penalty:</Text>
-            <Text style={styles.penaltyValue}>{score.peek_penalty || 0}</Text>
+            <Text style={styles.statLabel}>Map View:</Text>
+            <View style={styles.penaltyContainer}>
+              <Text style={styles.penaltyValue}>
+                {peekPenaltyPoints}
+              </Text>
+            </View>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Assist Penalty:</Text>
-            <Text style={styles.penaltyValue}>
-              {score.assist_penalty ? formatDuration(score.assist_penalty) : '0s'}
-            </Text>
+            <Text style={styles.statLabel}>Screen Time:</Text>
+            <View style={styles.penaltyContainer}>
+              <Text style={styles.penaltyValue}>
+                {formatDuration(assistPenaltySeconds)}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -142,7 +180,9 @@ export default function ScoreScreen() {
 
         <View style={styles.totalScoreContainer}>
           <Text style={styles.totalScoreLabel}>Total Score:</Text>
-          <Text style={styles.totalScoreValue}>{Math.round(score.task_score)}</Text>
+          <Text style={styles.totalScoreValue}>
+            {Math.round(score.task_score || 0)}
+          </Text>
         </View>
 
         {score.parking_location_name && (
@@ -215,7 +255,7 @@ export default function ScoreScreen() {
                   <View style={styles.summaryItem}>
                     <Text style={styles.summaryValue}>
                       {Math.round(
-                        scores.reduce((acc, s) => acc + s.task_score, 0) / scores.length
+                        scores.reduce((acc, s) => acc + (s.task_score || 0), 0) / scores.length
                       )}
                     </Text>
                     <Text style={styles.summaryLabel}>Avg Score</Text>
@@ -228,7 +268,7 @@ export default function ScoreScreen() {
                   <View style={styles.summaryDivider} />
                   <View style={styles.summaryItem}>
                     <Text style={styles.summaryValue}>
-                      {scores.filter(s => s.task_score >= 80).length}
+                      {scores.filter(s => (s.task_score || 0) >= 80).length}
                     </Text>
                     <Text style={styles.summaryLabel}>Great Scores</Text>
                   </View>
@@ -309,10 +349,21 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
     fontWeight: '600',
   },
+  penaltyContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
   penaltyValue: {
     fontSize: 16,
     color: '#EF4444',
     fontWeight: '600',
+  },
+  penaltySubtext: {
+    fontSize: 11,
+    color: '#EF4444',
+    fontWeight: '400',
+    opacity: 0.7,
+    marginLeft: 2,
   },
   divider: {
     height: 1,

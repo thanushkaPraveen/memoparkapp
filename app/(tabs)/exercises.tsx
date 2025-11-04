@@ -132,7 +132,7 @@ const exercises: Exercise[] = [
   {
     id: '6',
     title: 'Association Anchors',
-    icon: 'anchor-outline',
+    icon: 'navigate-outline',
     duration: '3 min',
     difficulty: 'Intermediate',
     category: 'memory',

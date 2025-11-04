@@ -2,6 +2,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import EmergencyCallButton from '../../components/EmergencyCallButton';
 import { COLORS } from '../../constants/colors';
 
 // Temporary icon component wrapper - you can replace with actual SVG later
@@ -42,17 +43,7 @@ export default function TabLayout() {
               color={focused ? COLORS.primary : COLORS.gray}
             />
           ),
-          headerRight: () => (
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={() => console.log('Home phone icon pressed!')}
-            >
-              <IconImage
-                source={require('../../assets/icons/phone.png')}
-                color={COLORS.primary}
-              />
-            </TouchableOpacity>
-          ),
+          headerRight: () => <EmergencyCallButton />,
         }}
       />
       <Tabs.Screen
@@ -66,17 +57,7 @@ export default function TabLayout() {
               color={focused ? COLORS.primary : COLORS.gray}
             />
           ),
-          headerRight: () => (
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={() => console.log('Exercises phone icon pressed!')}
-            >
-              <IconImage
-                source={require('../../assets/icons/phone.png')}
-                color={COLORS.primary}
-              />
-            </TouchableOpacity>
-          ),
+          headerRight: () => <EmergencyCallButton />,
         }}
       />
       <Tabs.Screen
@@ -90,17 +71,7 @@ export default function TabLayout() {
               color={focused ? COLORS.primary : COLORS.gray}
             />
           ),
-          headerRight: () => (
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={() => console.log('Score phone icon pressed!')}
-            >
-              <IconImage
-                source={require('../../assets/icons/phone.png')}
-                color={COLORS.primary}
-              />
-            </TouchableOpacity>
-          ),
+          headerRight: () => <EmergencyCallButton />,
         }}
       />
       <Tabs.Screen
@@ -125,15 +96,7 @@ export default function TabLayout() {
                   color={COLORS.primary}
                 />
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.headerButton}
-                onPress={() => console.log('Profile phone icon pressed!')}
-              >
-                <IconImage
-                  source={require('../../assets/icons/phone.png')}
-                  color={COLORS.primary}
-                />
-              </TouchableOpacity>
+              <EmergencyCallButton style={{ marginRight: 15 }} />
             </View>
           ),
         }}

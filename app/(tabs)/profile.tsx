@@ -1,7 +1,7 @@
-// app/(tabs)/profile.tsx
+// app/(tabs)/profile.tsx - FIXED VERSION
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   Alert,
   ScrollView,
@@ -11,27 +11,70 @@ import {
   View,
 } from 'react-native';
 import { COLORS } from '../../constants/colors';
+import {
+  useAccessibilityStore,
+  useScaledSizes,
+  type IconSizeType,
+  type LanguageType,
+  type TextSizeType
+} from '../../features/accessibility';
 import { useAuthStore } from '../../features/auth/store';
 import { useParkingStore } from '../../features/parking/store';
 
-type TextSizeType = 'small' | 'medium' | 'large';
-type IconSizeType = 'default' | 'medium' | 'large';
-type LanguageType = 'en' | 'ma';
-
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
-  console.log('User object from store:', JSON.stringify(user, null, 2));
   const clearActiveParking = useParkingStore((state) => state.clearActiveParkingSession);
   const router = useRouter();
 
-  const [selectedTextSize, setSelectedTextSize] = useState<TextSizeType>('medium');
-  const [selectedIconSize, setSelectedIconSize] = useState<IconSizeType>('default');
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageType>('en');
+  // Get accessibility settings from store
+  const textSize = useAccessibilityStore((state) => state.textSize);
+  const iconSize = useAccessibilityStore((state) => state.iconSize);
+  const language = useAccessibilityStore((state) => state.language);
+  const setTextSize = useAccessibilityStore((state) => state.setTextSize);
+  const setIconSize = useAccessibilityStore((state) => state.setIconSize);
+  const setLanguage = useAccessibilityStore((state) => state.setLanguage);
+
+  // Get scaled sizes for this screen's UI
+  const { text, icon } = useScaledSizes();
+
+  // Verify the functions exist
+  console.log('text function:', typeof text);
+  console.log('icon function:', typeof icon);
+  console.log('textSize:', textSize);
+
+  // Create dynamic styles based on text size
+  const dynamicStyles = useMemo(() => {
+    // Safety check
+    if (typeof text !== 'function') {
+      console.error('text is not a function!');
+      return {
+        avatarText: { fontSize: 36 },
+        name: { fontSize: 22 },
+        email: { fontSize: 14 },
+        sectionTitle: { fontSize: 18 },
+        optionLabel: { fontSize: 14 },
+        radioLabel: { fontSize: 14 },
+        iconButtonLabel: { fontSize: 14 },
+        logoutButtonText: { fontSize: 16 },
+        logoutIcon: 20,
+      };
+    }
+
+    return {
+      avatarText: { fontSize: text(36) },
+      name: { fontSize: text(22) },
+      email: { fontSize: text(14) },
+      sectionTitle: { fontSize: text(18) },
+      optionLabel: { fontSize: text(14) },
+      radioLabel: { fontSize: text(14) },
+      iconButtonLabel: { fontSize: text(14) },
+      logoutButtonText: { fontSize: text(16) },
+      logoutIcon: icon(20),
+    };
+  }, [text, icon]);
 
   // Helper to get initials from name
   const getInitials = (name?: string) => {
-    console.log(name);
-    
     if (!name) return '??';
     const names = name.split(' ');
     if (names.length > 1) {
@@ -59,11 +102,22 @@ export default function ProfileScreen() {
     ]);
   };
 
+  // Handle Text Size Change
+  const handleTextSizeChange = (size: TextSizeType) => {
+    console.log('🔵 Text size clicked:', size);
+    setTextSize(size);
+  };
+
+  // Handle Icon Size Change
+  const handleIconSizeChange = (size: IconSizeType) => {
+    console.log('🔵 Icon size clicked:', size);
+    setIconSize(size);
+  };
+
   // Handle Language Change
-  const handleLanguageChange = (language: LanguageType) => {
-    setSelectedLanguage(language);
-    // TODO: Implement actual language change logic using i18n
-    console.log('Language changed to:', language);
+  const handleLanguageChange = (newLanguage: LanguageType) => {
+    console.log('🔵 Language clicked:', newLanguage);
+    setLanguage(newLanguage);
   };
 
   // Radio Button Component
@@ -77,14 +131,23 @@ export default function ProfileScreen() {
     value: TextSizeType | LanguageType;
     selected: boolean;
     onSelect: (value: any) => void;
-  }) => (
-    <TouchableOpacity style={styles.radioOption} onPress={() => onSelect(value)}>
-      <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
-        {selected && <View style={styles.radioInner} />}
-      </View>
-      <Text style={styles.radioLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
+  }) => {
+    return (
+      <TouchableOpacity 
+        style={styles.radioOption} 
+        onPress={() => {
+          console.log(`✅ Radio pressed: ${label}`);
+          onSelect(value);
+        }}
+        activeOpacity={0.7}
+      >
+        <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
+          {selected && <View style={styles.radioInner} />}
+        </View>
+        <Text style={[styles.radioLabel, dynamicStyles.radioLabel]}>{label}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   // Icon Button Component
   const IconButton = ({
@@ -97,21 +160,31 @@ export default function ProfileScreen() {
     value: IconSizeType;
     selected: boolean;
     onSelect: (value: IconSizeType) => void;
-  }) => (
-    <TouchableOpacity
-      style={[styles.iconButtonOption, selected && styles.iconButtonSelected]}
-      onPress={() => onSelect(value)}
-    >
-      <Ionicons
-        name="happy-outline"
-        size={selected ? 32 : 24}
-        color={selected ? COLORS.primary : COLORS.gray}
-      />
-      <Text style={[styles.iconButtonLabel, selected && styles.iconButtonLabelSelected]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
+  }) => {
+    return (
+      <TouchableOpacity
+        style={[styles.iconButtonOption, selected && styles.iconButtonSelected]}
+        onPress={() => {
+          console.log(`✅ Icon button pressed: ${label}`);
+          onSelect(value);
+        }}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name="happy-outline"
+          size={selected ? 32 : 24}
+          color={selected ? COLORS.primary : COLORS.gray}
+        />
+        <Text style={[
+          styles.iconButtonLabel, 
+          dynamicStyles.iconButtonLabel,
+          selected && styles.iconButtonLabelSelected
+        ]}>
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.safeArea}>
@@ -123,64 +196,83 @@ export default function ProfileScreen() {
         {/* --- Profile Header --- */}
         <View style={styles.profileHeader}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{getInitials(user?.user_name)}</Text>
+            <Text style={[styles.avatarText, dynamicStyles.avatarText]}>
+              {getInitials(user?.user_name)}
+            </Text>
           </View>
-          <Text style={styles.name}>{user?.user_name || 'User Name'}</Text>
-          <Text style={styles.email}>{user?.user_email || 'user@email.com'}</Text>
+          <Text style={[styles.name, dynamicStyles.name]}>
+            {user?.user_name || 'User Name'}
+          </Text>
+          <Text style={[styles.email, dynamicStyles.email]}>
+            {user?.user_email || 'user@email.com'}
+          </Text>
         </View>
 
         <View style={styles.divider} />
 
         {/* --- Accessibility Section --- */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Accessibility</Text>
+          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
+            Accessibility
+          </Text>
+
+          {/* Debug Info - Remove this after testing */}
+          <View style={{ backgroundColor: '#E3F2FD', padding: 10, marginBottom: 15, borderRadius: 5 }}>
+            <Text style={{ fontSize: 12, color: '#1976D2' }}>
+              📊 Current: {textSize} | 16px → {text(16)}px
+            </Text>
+          </View>
 
           {/* Text Size Options */}
           <View style={styles.optionGroup}>
-            <Text style={styles.optionLabel}>Text size</Text>
+            <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
+              Text size
+            </Text>
             <View style={styles.radioContainer}>
               <RadioButton
                 label="Small"
                 value="small"
-                selected={selectedTextSize === 'small'}
-                onSelect={setSelectedTextSize}
+                selected={textSize === 'small'}
+                onSelect={handleTextSizeChange}
               />
               <RadioButton
                 label="Medium"
                 value="medium"
-                selected={selectedTextSize === 'medium'}
-                onSelect={setSelectedTextSize}
+                selected={textSize === 'medium'}
+                onSelect={handleTextSizeChange}
               />
               <RadioButton
                 label="Large"
                 value="large"
-                selected={selectedTextSize === 'large'}
-                onSelect={setSelectedTextSize}
+                selected={textSize === 'large'}
+                onSelect={handleTextSizeChange}
               />
             </View>
           </View>
 
           {/* Icon Size Options */}
           <View style={styles.optionGroup}>
-            <Text style={styles.optionLabel}>Icon size</Text>
+            <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
+              Icon size
+            </Text>
             <View style={styles.iconButtonContainer}>
               <IconButton
                 label="Default"
                 value="default"
-                selected={selectedIconSize === 'default'}
-                onSelect={setSelectedIconSize}
+                selected={iconSize === 'default'}
+                onSelect={handleIconSizeChange}
               />
               <IconButton
                 label="Medium"
                 value="medium"
-                selected={selectedIconSize === 'medium'}
-                onSelect={setSelectedIconSize}
+                selected={iconSize === 'medium'}
+                onSelect={handleIconSizeChange}
               />
               <IconButton
                 label="Large"
                 value="large"
-                selected={selectedIconSize === 'large'}
-                onSelect={setSelectedIconSize}
+                selected={iconSize === 'large'}
+                onSelect={handleIconSizeChange}
               />
             </View>
           </View>
@@ -190,22 +282,26 @@ export default function ProfileScreen() {
 
         {/* --- Preferences Section --- */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
+            Preferences
+          </Text>
 
           {/* Language Options */}
           <View style={styles.optionGroup}>
-            <Text style={styles.optionLabel}>Language</Text>
+            <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
+              Language
+            </Text>
             <View style={styles.languageContainer}>
               <RadioButton
                 label="English"
                 value="en"
-                selected={selectedLanguage === 'en'}
+                selected={language === 'en'}
                 onSelect={handleLanguageChange}
               />
               <RadioButton
                 label="Te Reo Māori"
                 value="ma"
-                selected={selectedLanguage === 'ma'}
+                selected={language === 'ma'}
                 onSelect={handleLanguageChange}
               />
             </View>
@@ -216,8 +312,15 @@ export default function ProfileScreen() {
 
         {/* --- Logout Button --- */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color={COLORS.white} style={{ marginRight: 8 }} />
-          <Text style={styles.logoutButtonText}>Logout</Text>
+          <Ionicons 
+            name="log-out-outline" 
+            size={dynamicStyles.logoutIcon} 
+            color={COLORS.white} 
+            style={{ marginRight: 8 }} 
+          />
+          <Text style={[styles.logoutButtonText, dynamicStyles.logoutButtonText]}>
+            Logout
+          </Text>
         </TouchableOpacity>
 
         {/* Extra padding for scroll */}
@@ -256,18 +359,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   avatarText: {
-    fontSize: 36,
     fontWeight: '700',
     color: '#5A4570',
   },
   name: {
-    fontSize: 22,
     fontWeight: '600',
     color: COLORS.dark,
     marginBottom: 4,
   },
   email: {
-    fontSize: 14,
     color: COLORS.gray,
   },
 
@@ -285,7 +385,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   sectionTitle: {
-    fontSize: 18,
     fontWeight: '700',
     color: COLORS.dark,
     marginBottom: 20,
@@ -296,7 +395,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   optionLabel: {
-    fontSize: 14,
     fontWeight: '500',
     color: COLORS.dark,
     marginBottom: 14,
@@ -339,7 +437,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   radioLabel: {
-    fontSize: 14,
     fontWeight: '400',
     color: COLORS.dark,
   },
@@ -369,7 +466,6 @@ const styles = StyleSheet.create({
   },
   iconButtonLabel: {
     marginTop: 10,
-    fontSize: 14,
     fontWeight: '500',
     color: COLORS.gray,
   },
@@ -398,7 +494,6 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: COLORS.white,
-    fontSize: 16,
     fontWeight: '600',
   },
 });

@@ -1,4 +1,4 @@
-// app/(tabs)/profile.tsx - FIXED VERSION
+// app/(tabs)/profile.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
@@ -217,11 +217,11 @@ export default function ProfileScreen() {
           </Text>
 
           {/* Debug Info - Remove this after testing */}
-          <View style={{ backgroundColor: '#E3F2FD', padding: 10, marginBottom: 15, borderRadius: 5 }}>
+          {/* <View style={{ backgroundColor: '#E3F2FD', padding: 10, marginBottom: 15, borderRadius: 5 }}>
             <Text style={{ fontSize: 12, color: '#1976D2' }}>
               📊 Current: {textSize} | 16px → {text(16)}px
             </Text>
-          </View>
+          </View> */}
 
           {/* Text Size Options */}
           <View style={styles.optionGroup}>

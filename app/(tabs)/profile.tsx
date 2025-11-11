@@ -2,6 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   ScrollView,
@@ -41,6 +42,8 @@ export default function ProfileScreen() {
   console.log('text function:', typeof text);
   console.log('icon function:', typeof icon);
   console.log('textSize:', textSize);
+
+  const { t } = useTranslation();
 
   // Create dynamic styles based on text size
   const dynamicStyles = useMemo(() => {
@@ -319,7 +322,7 @@ export default function ProfileScreen() {
             style={{ marginRight: 8 }} 
           />
           <Text style={[styles.logoutButtonText, dynamicStyles.logoutButtonText]}>
-            Logout
+            {t('profile.logout')}
           </Text>
         </TouchableOpacity>
 

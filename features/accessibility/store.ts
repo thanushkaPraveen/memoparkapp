@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import i18n from '../../locales';
 
 export type TextSizeType = 'small' | 'medium' | 'large';
 export type IconSizeType = 'default' | 'medium' | 'large';
@@ -23,11 +24,19 @@ export const useAccessibilityStore = create<AccessibilityState>()(
       language: 'en',
       setTextSize: (size) => set({ textSize: size }),
       setIconSize: (size) => set({ iconSize: size }),
-      setLanguage: (language) => set({ language: language }),
+      setLanguage: (language) => {
+        i18n.changeLanguage(language);
+        set({ language: language });
+      },
     }),
     {
       name: 'accessibility-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state?.language) {
+          i18n.changeLanguage(state.language);
+        }
+      },
     }
   )
 );

@@ -1,7 +1,7 @@
 {
   "common": {
     "home": "Kāinga",
-    "exercises": "Ngā Whakamātautau",
+    "exercises": "Ngohe",
     "score": "Tohu",
     "profile": "Kōtaha",
     "save": "Tiaki",
@@ -47,24 +47,152 @@
     "tryAgain": "Ngana anō",
     "score": "Tō tohu: {{score}}",
     "timeSpent": "Te wā i pau: {{time}}",
-    "accuracy": "Tika: {{accuracy}}%"
+    "accuracy": "Tika: {{accuracy}}%",
+    "header": {
+      "title": "Ngā Whakamātautau Mahara",
+      "subtitle": "Whakapai i ō pūkenga whakatere tohu whenua"
+    },
+    "categories": {
+      "all": "Katoa",
+      "memory": "Mahara",
+      "spatial": "Mokowā",
+      "observation": "Mātakitaki",
+      "practice": "Whakamātautau"
+    },
+    "difficulty": {
+      "beginner": "Tīmata",
+      "intermediate": "Waenganui",
+      "advanced": "Teitei"
+    },
+    "howToPractice": "Me Pēhea te Whakamātau",
+    "proTips": "Ngā Tohutohu Mōhio",
+    "startExercise": "Tīmata Whakamātautau",
+    "quickTips": {
+      "title": "Ngā Tohutohu Mahara Tere",
+      "tips": [
+        "Titiro ki muri ki tō waka i mua i te tomo ki te whare - ka kaha ake te mahara whakaahua.",
+        "Whakamahia tō waea ki te tango whakaahua hei taupuni, engari ngana ki te whakawhirinaki ki te mahara tuatahi.",
+        "Whakamātauhia ēnei tikanga i ngā wāhi e mōhiotia ana kia whai maia i mua i te whakamahi i ngā wāhi hou."
+      ]
+    },
+    "landmarkChain": {
+      "title": "Tikanga Mekameka Tohu Whenua",
+      "description": "Waihanga hononga maharatanga i waenga i ngā tohu whenua hei hanga ara hinengaro ki tō waka.",
+      "steps": [
+        "I te wā e wehe ana i tō waka, tautuhia 3-5 tohu whenua rereke i tō ara",
+        "Waihangahia tētahi kōrero e hono ana i ia tohu whenua",
+        "Hei tauira: \"I pāka au i te pouaka mēra WHERO, haere atu i te rākau TEITEI, tomo mai i te tatau KIKORANGI\"",
+        "Whakamāramatia te kōrero 2-3 wā i a koe e haere ana",
+        "I te hokinga mai, hurihia te kōrero kia kitea tō ara"
+      ],
+      "tips": [
+        "Whakamahia ngā taipitopito autaia, rereke e tū mai ana",
+        "Whakauru i ngā tae, te rahi, me ngā āhuatanga ahurei",
+        "Ko te mea noa iho te kōrero, ko te ngāwari ake te mahara"
+      ]
+    },
+    "photoMemory": {
+      "title": "Whare Mahara Whakaahua",
+      "description": "Whakamahia ngā hopunga ataata kia hangaia he mahere hinengaro o tō wāhi pāka.",
+      "steps": [
+        "Tū mai ki tō waka, tangohia tētahi \"whakaahua\" hinengaro o te rohe",
+        "Hurihia 90 kenenga, tangohia anō tētahi hopunga hinengaro",
+        "Whakaarohia kia 4 ngā whakaahua hinengaro (kotahi mō ia ahunga)",
+        "I a koe e haere atu ana, titiro ki muri, tangohia te whakaahua hinengaro whakamutunga",
+        "I te hokinga mai, whakamaumaharatia ēnei whakaahua i te huringa whakamuri"
+      ],
+      "tips": [
+        "Arotahia ngā āhuatanga tūturu, kaua ngā waka kē",
+        "Whakauru i ngā koki whare, tohu, me ngā tohu kua peita",
+        "Katia ō kanohi iti noa hei \"tiaki\" i ia whakaahua hinengaro"
+      ]
+    },
+    "numberShape": {
+      "title": "Pūnaha Tau-Āhua",
+      "description": "Whakawhitihia ngā kōrero pāka ki ngā āhua me ngā tauira maharatanga.",
+      "steps": [
+        "Tuhia tō nama wāhi pāka, ngā tohu tata rānei",
+        "Whakawhitihia ngā tau ki ngā āhua (1=pene, 2=wani, 3=manawa, etc.)",
+        "Waihangahia tētahi tirohanga me ēnei āhua",
+        "Tāpirihia te papa/taumata hei tae ki tō tirohanga",
+        "Arotakehia te whakaahua katoa i mua i te haere"
+      ],
+      "tips": [
+        "Whakamahia ngā hononga tau-āhua ōrite",
+        "Meinga te whakaahua hinengaro kia nui, kia kanapa",
+        "Tāpirihia te neke, te taunekeneke rānei i waenga i ngā āhua"
+      ]
+    },
+    "breadcrumb": {
+      "title": "Tikanga Pirere Parāoa",
+      "description": "Waiho \"pirere parāoa\" hinengaro i ngā wāhanga whakatau matua o tō ara.",
+      "steps": [
+        "I ia huringa, tomokanga rānei, tatari 2 hēkona",
+        "Tuhia tētahi āhuatanga ahurei o tērā wāhi",
+        "Kīia tēnā: \"Ka huri mauī i te pou kōwhai\"",
+        "Tauria ō huringa i a koe e haere ana",
+        "I te hokinga mai, tauria whakamuri, rapua ō tohu"
+      ],
+      "tips": [
+        "Arotahia ngā mea e kore e neke",
+        "Whakamahia ngā pūkaha maha - tuhia ngā oro me ngā kakara anō hoki",
+        "Whakamātauhia tēnei tikanga i ngā wāhi e mōhio ana koe tuatahi"
+      ]
+    },
+    "spatialGrid": {
+      "title": "Whakamātautau Tukutuku Mokowā",
+      "description": "Whakawhanakehia ō pūkenga mahere hinengaro mā tēnei whakamātautau whakaahua.",
+      "steps": [
+        "I mua i te pāka, whakaahuahia te rohe hei tukutuku mai i runga",
+        "Whakanohoia tō waka ki runga i tēnei tukutuku hinengaro",
+        "Tautuhia tō wāhi taunga i runga i te tukutuku",
+        "Tuhia tō ara i runga i te tukutuku hinengaro i a koe e haere ana",
+        "Whakamātauhia te hanga anō i te tukutuku mai i te mahara i tō taunga",
+        "Whakamahia te tukutuku hei whakatere hoki me te kore titiro ki ngā tohu whenua"
+      ],
+      "tips": [
+        "Tīmatahia ki ngā wāhi pāka tapawhā ngāwari",
+        "Whakamahia ngā ahunga matua (N, S, E, W) hei punga",
+        "Whakamātauhia i ngā wāhi e mōhio ana i mua i te ngana i ngā wāhi hou"
+      ]
+    },
+    "association": {
+      "title": "Punga Hononga",
+      "description": "Waihangahia ngā hononga hinengaro kaha i waenga i ngā tohu whenua me ngā mahara whaiaro.",
+      "steps": [
+        "Tautuhia 3 tohu whenua tata ki tō wāhi pāka",
+        "Honohia ia tohu whenua ki tētahi mahara whaiaro, tangata rānei",
+        "Tauira: \"Ko tēnei tohu whero e whakamaumahara ana i ahau ki te koti whero a māmā\"",
+        "Waihangahia ngā hononga kare-ā-roto hei whakapakari i te mahara",
+        "Arotakehia ngā hononga i mua i te wehe atu i te rohe"
+      ],
+      "tips": [
+        "Whakamahia ngā mahara pai, whai tikanga",
+        "Ko te kaha o te kare-ā-roto, ko te pai ake o te mahara",
+        "Honohia ki ngā tāngata e mōhio ana koe hei pupuri pai ake"
+      ]
+    }
   },
   "score": {
     "title": "Tohu",
-    "subtitle": "Aroturuki i tō ahunga whakamua",
     "totalScore": "Tohu Tapeke",
-    "recentPerformance": "Mahi Tata Nei",
-    "accuracy": "Tika",
-    "completedExercises": "Ngā Whakamātautau Kua Oti",
-    "landmarkRecall": "Mahara Tohu Whenua",
-    "pathQuality": "Kounga Ara",
-    "timeEfficiency": "Whai Hua Wā",
-    "overallScore": "Tohu Katoa",
-    "excellent": "Tino pai!",
-    "good": "Pai",
-    "needsImprovement": "Me pai ake",
-    "noScoresYet": "Kāore anō kia whai tohu. Whakaotia ngā whakamātautau kia kite i tō ahunga whakamua.",
-    "viewDetails": "Tirohia ngā Taipitopito"
+    "timeFactor": "Āhuatanga Wā",
+    "landmarks": "Tohu Whenua",
+    "mapView": "Tirohanga Mahere",
+    "screenTime": "Wā Mata",
+    "latestSession": "Wā Hou Rawa",
+    "today": "Ināianei",
+    "yesterday": "Inanahi",
+    "daysAgo": "{{count}} rā i mua",
+    "yourProgress": "Tō Ahunga Whakamua",
+    "avgScore": "Tohu Toharite",
+    "sessions": "Ngā Wā",
+    "greatScores": "Tohu Tino Pai",
+    "noScoresYet": "Kāore Anō Kia Whai Tohu",
+    "completeSessionPrompt": "Whakaotia tētahi wā pāka me te whakatere kia kite i ō tohu ki konei",
+    "unableToLoad": "Kāore e Taea te Uta Tohu",
+    "dateUnknown": "Rā Kāore e Mōhiotia",
+    "invalidDate": "Rā Muhu"
   },
   "profile": {
     "title": "Kōtaha",
@@ -79,7 +207,7 @@
     "iconSize": "Te rahi o te tohu",
     "language": "Te Reo",
     "small": "Iti",
-    "medium": "Waenganui",
+    "medium": "Waenga",
     "large": "Nui",
     "default": "Taunoa",
     "english": "Ingarihi",
@@ -161,5 +289,5 @@
     "profileUpdated": "Kua whakahōutia te kōtaha",
     "settingsSaved": "Kua tiakina ngā tautuhinga",
     "locationSaved": "Kua tiakina te wāhi"
-  }
+  } 
 }

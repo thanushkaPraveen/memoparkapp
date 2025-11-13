@@ -1,6 +1,7 @@
-// app/(tabs)/score.tsx
+// app/(tabs)/score.tsx 
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -11,9 +12,9 @@ import {
   View,
 } from 'react-native';
 import { COLORS } from '../../constants/colors';
+import { useScaledSizes } from '../../features/accessibility';
 import axiosClient from '../../lib/axios';
 
-// Type definitions - UPDATED to match backend
 interface ScoreDetails {
   parking_events_id: number;
   time_factor: number;
@@ -34,10 +35,61 @@ interface ScoreDetails {
 }
 
 export default function ScoreScreen() {
+  const { t } = useTranslation();
+  const { text, icon } = useScaledSizes();
+  
   const [scores, setScores] = useState<ScoreDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Scaled font sizes
+  const scaledFonts = useMemo(() => ({
+    cardTitle: text(18),
+    statLabel: text(14),
+    statValue: text(16),
+    totalScoreLabel: text(16),
+    totalScoreValue: text(48),
+    locationText: text(12),
+    emptyTitle: text(20),
+    emptyText: text(14),
+    loadingText: text(14),
+    errorTitle: text(18),
+    errorText: text(14),
+    retryButtonText: text(14),
+    summaryTitle: text(18),
+    summaryValue: text(28),
+    summaryLabel: text(12),
+  }), [text]);
+
+  // Scaled spacing
+  const scaledSpacing = useMemo(() => ({
+    containerPadding: text(16),
+    cardPadding: text(20),
+    cardMarginBottom: text(16),
+    cardBorderRadius: text(16),
+    cardTitleMargin: text(16),
+    statsRowMargin: text(12),
+    statItemPadding: text(10),
+    dividerMargin: text(16),
+    locationMarginTop: text(12),
+    emptyIconSize: icon(80),
+    emptyTitleMargin: text(16),
+    emptyTextMargin: text(8),
+    errorIconSize: icon(60),
+    errorTitleMargin: text(16),
+    errorTextMargin: text(8),
+    errorButtonMargin: text(20),
+    errorButtonPadding: text(12),
+    errorButtonPaddingHorizontal: text(24),
+    summaryMarginTop: text(8),
+    summaryPadding: text(20),
+    summaryTitleMargin: text(16),
+    summaryDividerHeight: text(40),
+    summaryValueMargin: text(4),
+    loadingIconSize: icon(40),
+    loadingTextMargin: text(12),
+  }), [text, icon]);
 
   useEffect(() => {
     fetchScores();
@@ -53,11 +105,10 @@ export default function ScoreScreen() {
       setError(null);
 
       const response = await axiosClient.get('/scores');
-      console.log('Scores response:', response.data);
       setScores(response.data);
     } catch (err: any) {
       console.error('Error fetching scores:', err);
-      setError('Failed to load scores');
+      setError(t('errors.networkError'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -70,14 +121,14 @@ export default function ScoreScreen() {
 
   const formatDate = (dateString: string | undefined | null) => {
     if (!dateString) {
-      return 'Date Unknown';
+      return t('score.dateUnknown');
     }
 
     try {
       const date = new Date(dateString);
       
       if (isNaN(date.getTime())) {
-        return 'Invalid Date';
+        return t('score.invalidDate');
       }
 
       const now = new Date();
@@ -85,11 +136,11 @@ export default function ScoreScreen() {
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffDays === 0) {
-        return 'Today';
+        return t('score.today');
       } else if (diffDays === 1) {
-        return 'Yesterday';
+        return t('score.yesterday');
       } else if (diffDays < 7) {
-        return `${diffDays} days ago`;
+        return t('score.daysAgo', { count: diffDays });
       } else {
         return date.toLocaleDateString('en-US', { 
           month: 'short', 
@@ -98,13 +149,12 @@ export default function ScoreScreen() {
         });
       }
     } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'Invalid Date';
+      return t('score.invalidDate');
     }
   };
 
   const getSessionLabel = (score: ScoreDetails, index: number): string => {
-    if (index === 0) return 'Latest Session';
+    if (index === 0) return t('score.latestSession');
     
     const dateToUse = score.calculated_at || score.ended_at || score.created_at;
     return formatDate(dateToUse);
@@ -133,7 +183,6 @@ export default function ScoreScreen() {
     ? `${score.landmarks_recalled}/${score.no_of_landmarks}` 
     : "0/0";
 
-    // Calculate penalty points for display
     const peekPenaltyPoints = score.assistance_points || 0;
     const assistPenaltySeconds = score.assist_penalty || 0;
     const assistPenaltyPoints = assistPenaltySeconds > 0 
@@ -141,52 +190,112 @@ export default function ScoreScreen() {
       : 0;
 
     return (
-      <View key={score.parking_events_id} style={styles.card}>
-        <Text style={styles.cardTitle}>{label}</Text>
+      <View 
+        key={score.parking_events_id} 
+        style={[
+          styles.card,
+          {
+            padding: scaledSpacing.cardPadding,
+            marginBottom: scaledSpacing.cardMarginBottom,
+            borderRadius: scaledSpacing.cardBorderRadius,
+          }
+        ]}
+      >
+        <Text style={[
+          styles.cardTitle,
+          { 
+            fontSize: scaledFonts.cardTitle,
+            marginBottom: scaledSpacing.cardTitleMargin,
+          }
+        ]}>
+          {label}
+        </Text>
         
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Time Factor:</Text>
-            <Text style={styles.statValue}>
+        <View style={[
+          styles.statsRow,
+          { marginBottom: scaledSpacing.statsRowMargin }
+        ]}>
+          <View style={[
+            styles.statItem,
+            { paddingRight: scaledSpacing.statItemPadding }
+          ]}>
+            <Text style={[styles.statLabel, { fontSize: scaledFonts.statLabel }]}>
+              {t('score.timeFactor')}:
+            </Text>
+            <Text style={[styles.statValue, { fontSize: scaledFonts.statValue }]}>
               {Math.round(score.time_factor || 0)}%
             </Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Landmarks:</Text>
-            <Text style={styles.statValue}>{landmark_count} </Text>
+          <View style={[
+            styles.statItem,
+            { paddingRight: scaledSpacing.statItemPadding }
+          ]}>
+            <Text style={[styles.statLabel, { fontSize: scaledFonts.statLabel }]}>
+              {t('score.landmarks')}:
+            </Text>
+            <Text style={[styles.statValue, { fontSize: scaledFonts.statValue }]}>
+              {landmark_count}
+            </Text>
           </View>
         </View>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Map View:</Text>
+        <View style={[
+          styles.statsRow,
+          { marginBottom: scaledSpacing.statsRowMargin }
+        ]}>
+          <View style={[
+            styles.statItem,
+            { paddingRight: scaledSpacing.statItemPadding }
+          ]}>
+            <Text style={[styles.statLabel, { fontSize: scaledFonts.statLabel }]}>
+              {t('score.mapView')}:
+            </Text>
             <View style={styles.penaltyContainer}>
-              <Text style={styles.penaltyValue}>
+              <Text style={[styles.penaltyValue, { fontSize: scaledFonts.statValue }]}>
                 {peekPenaltyPoints}
               </Text>
             </View>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Screen Time:</Text>
+          <View style={[
+            styles.statItem,
+            { paddingRight: scaledSpacing.statItemPadding }
+          ]}>
+            <Text style={[styles.statLabel, { fontSize: scaledFonts.statLabel }]}>
+              {t('score.screenTime')}:
+            </Text>
             <View style={styles.penaltyContainer}>
-              <Text style={styles.penaltyValue}>
+              <Text style={[styles.penaltyValue, { fontSize: scaledFonts.statValue }]}>
                 {formatDuration(assistPenaltySeconds)}
               </Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.divider} />
+        <View style={[
+          styles.divider,
+          { marginVertical: scaledSpacing.dividerMargin }
+        ]} />
 
         <View style={styles.totalScoreContainer}>
-          <Text style={styles.totalScoreLabel}>Total Score:</Text>
-          <Text style={styles.totalScoreValue}>
+          <Text style={[styles.totalScoreLabel, { fontSize: scaledFonts.totalScoreLabel }]}>
+            {t('score.totalScore')}:
+          </Text>
+          <Text style={[styles.totalScoreValue, { fontSize: scaledFonts.totalScoreValue }]}>
             {Math.round(score.task_score || 0)}
           </Text>
         </View>
 
         {score.parking_location_name && (
-          <Text style={styles.locationText} numberOfLines={1}>
+          <Text 
+            style={[
+              styles.locationText,
+              { 
+                fontSize: scaledFonts.locationText,
+                marginTop: scaledSpacing.locationMarginTop,
+              }
+            ]} 
+            numberOfLines={1}
+          >
             📍 {score.parking_location_name}
           </Text>
         )}
@@ -196,21 +305,66 @@ export default function ScoreScreen() {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="trophy-outline" size={80} color={COLORS.gray} />
-      <Text style={styles.emptyTitle}>No Scores Yet</Text>
-      <Text style={styles.emptyText}>
-        Complete a parking session with navigation to see your scores here
+      <Ionicons 
+        name="trophy-outline" 
+        size={scaledSpacing.emptyIconSize} 
+        color={COLORS.gray} 
+      />
+      <Text style={[
+        styles.emptyTitle,
+        { 
+          fontSize: scaledFonts.emptyTitle,
+          marginTop: scaledSpacing.emptyTitleMargin,
+          marginBottom: scaledSpacing.emptyTextMargin,
+        }
+      ]}>
+        {t('score.noScoresYet')}
+      </Text>
+      <Text style={[styles.emptyText, { fontSize: scaledFonts.emptyText }]}>
+        {t('score.completeSessionPrompt')}
       </Text>
     </View>
   );
 
   const renderError = () => (
     <View style={styles.errorContainer}>
-      <Ionicons name="alert-circle-outline" size={60} color={COLORS.error} />
-      <Text style={styles.errorTitle}>Unable to Load Scores</Text>
-      <Text style={styles.errorText}>{error}</Text>
-      <TouchableOpacity style={styles.retryButton} onPress={() => fetchScores()}>
-        <Text style={styles.retryButtonText}>Try Again</Text>
+      <Ionicons 
+        name="alert-circle-outline" 
+        size={scaledSpacing.errorIconSize} 
+        color={COLORS.error} 
+      />
+      <Text style={[
+        styles.errorTitle,
+        {
+          fontSize: scaledFonts.errorTitle,
+          marginTop: scaledSpacing.errorTitleMargin,
+          marginBottom: scaledSpacing.errorTextMargin,
+        }
+      ]}>
+        {t('score.unableToLoad')}
+      </Text>
+      <Text style={[
+        styles.errorText,
+        {
+          fontSize: scaledFonts.errorText,
+          marginBottom: scaledSpacing.errorButtonMargin,
+        }
+      ]}>
+        {error}
+      </Text>
+      <TouchableOpacity 
+        style={[
+          styles.retryButton,
+          {
+            paddingHorizontal: scaledSpacing.errorButtonPaddingHorizontal,
+            paddingVertical: scaledSpacing.errorButtonPadding,
+          }
+        ]}
+        onPress={() => fetchScores()}
+      >
+        <Text style={[styles.retryButtonText, { fontSize: scaledFonts.retryButtonText }]}>
+          {t('common.tryAgain')}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -219,7 +373,15 @@ export default function ScoreScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading scores...</Text>
+        <Text style={[
+          styles.loadingText,
+          {
+            marginTop: scaledSpacing.loadingTextMargin,
+            fontSize: scaledFonts.loadingText,
+          }
+        ]}>
+          {t('common.loading')}
+        </Text>
       </View>
     );
   }
@@ -232,7 +394,10 @@ export default function ScoreScreen() {
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { padding: scaledSpacing.containerPadding }
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -249,28 +414,75 @@ export default function ScoreScreen() {
             {scores.map((score, index) => renderScoreCard(score, index))}
             
             {scores.length > 0 && (
-              <View style={styles.summaryContainer}>
-                <Text style={styles.summaryTitle}>Your Progress</Text>
+              <View style={[
+                styles.summaryContainer,
+                {
+                  borderRadius: scaledSpacing.cardBorderRadius,
+                  padding: scaledSpacing.summaryPadding,
+                  marginTop: scaledSpacing.summaryMarginTop,
+                }
+              ]}>
+                <Text style={[
+                  styles.summaryTitle,
+                  {
+                    fontSize: scaledFonts.summaryTitle,
+                    marginBottom: scaledSpacing.summaryTitleMargin,
+                  }
+                ]}>
+                  {t('score.yourProgress')}
+                </Text>
                 <View style={styles.summaryStats}>
                   <View style={styles.summaryItem}>
-                    <Text style={styles.summaryValue}>
+                    <Text style={[
+                      styles.summaryValue,
+                      {
+                        fontSize: scaledFonts.summaryValue,
+                        marginBottom: scaledSpacing.summaryValueMargin,
+                      }
+                    ]}>
                       {Math.round(
                         scores.reduce((acc, s) => acc + (s.task_score || 0), 0) / scores.length
                       )}
                     </Text>
-                    <Text style={styles.summaryLabel}>Avg Score</Text>
+                    <Text style={[styles.summaryLabel, { fontSize: scaledFonts.summaryLabel }]}>
+                      {t('score.avgScore')}
+                    </Text>
                   </View>
-                  <View style={styles.summaryDivider} />
+                  <View style={[
+                    styles.summaryDivider,
+                    { height: scaledSpacing.summaryDividerHeight }
+                  ]} />
                   <View style={styles.summaryItem}>
-                    <Text style={styles.summaryValue}>{scores.length}</Text>
-                    <Text style={styles.summaryLabel}>Sessions</Text>
+                    <Text style={[
+                      styles.summaryValue,
+                      {
+                        fontSize: scaledFonts.summaryValue,
+                        marginBottom: scaledSpacing.summaryValueMargin,
+                      }
+                    ]}>
+                      {scores.length}
+                    </Text>
+                    <Text style={[styles.summaryLabel, { fontSize: scaledFonts.summaryLabel }]}>
+                      {t('score.sessions')}
+                    </Text>
                   </View>
-                  <View style={styles.summaryDivider} />
+                  <View style={[
+                    styles.summaryDivider,
+                    { height: scaledSpacing.summaryDividerHeight }
+                  ]} />
                   <View style={styles.summaryItem}>
-                    <Text style={styles.summaryValue}>
+                    <Text style={[
+                      styles.summaryValue,
+                      {
+                        fontSize: scaledFonts.summaryValue,
+                        marginBottom: scaledSpacing.summaryValueMargin,
+                      }
+                    ]}>
                       {scores.filter(s => (s.task_score || 0) >= 80).length}
                     </Text>
-                    <Text style={styles.summaryLabel}>Great Scores</Text>
+                    <Text style={[styles.summaryLabel, { fontSize: scaledFonts.summaryLabel }]}>
+                      {t('score.greatScores')}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -287,34 +499,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F7FA',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
     paddingBottom: 100,
   },
   card: {
     backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -322,30 +514,24 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardTitle: {
-    fontSize: 18,
     fontWeight: '600',
     color: COLORS.dark,
-    marginBottom: 16,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
   },
   statItem: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingRight: 10,
   },
   statLabel: {
-    fontSize: 14,
     color: '#6B7280',
     fontWeight: '400',
   },
   statValue: {
-    fontSize: 16,
     color: COLORS.dark,
     fontWeight: '600',
   },
@@ -354,21 +540,12 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   penaltyValue: {
-    fontSize: 16,
     color: '#EF4444',
     fontWeight: '600',
-  },
-  penaltySubtext: {
-    fontSize: 11,
-    color: '#EF4444',
-    fontWeight: '400',
-    opacity: 0.7,
-    marginLeft: 2,
   },
   divider: {
     height: 1,
     backgroundColor: '#E5E7EB',
-    marginVertical: 16,
   },
   totalScoreContainer: {
     flexDirection: 'row',
@@ -376,19 +553,15 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   totalScoreLabel: {
-    fontSize: 16,
     color: '#6B7280',
     fontWeight: '500',
   },
   totalScoreValue: {
-    fontSize: 48,
     fontWeight: '700',
     color: COLORS.primary,
   },
   locationText: {
-    fontSize: 12,
     color: '#9CA3AF',
-    marginTop: 12,
   },
   loadingContainer: {
     flex: 1,
@@ -397,8 +570,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F7FA',
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
     color: '#6B7280',
   },
   emptyContainer: {
@@ -409,14 +580,10 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   emptyTitle: {
-    fontSize: 20,
     fontWeight: '600',
     color: COLORS.dark,
-    marginTop: 16,
-    marginBottom: 8,
   },
   emptyText: {
-    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 20,
@@ -428,40 +595,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorTitle: {
-    fontSize: 18,
     fontWeight: '600',
     color: COLORS.dark,
-    marginTop: 16,
-    marginBottom: 8,
   },
   errorText: {
-    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 20,
   },
   retryButton: {
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     borderRadius: 8,
   },
   retryButtonText: {
     color: COLORS.white,
-    fontSize: 14,
     fontWeight: '600',
   },
   summaryContainer: {
     backgroundColor: COLORS.primary,
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 8,
   },
   summaryTitle: {
-    fontSize: 18,
     fontWeight: '600',
     color: COLORS.white,
-    marginBottom: 16,
     textAlign: 'center',
   },
   summaryStats: {
@@ -474,19 +628,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryValue: {
-    fontSize: 28,
     fontWeight: '700',
     color: COLORS.white,
-    marginBottom: 4,
   },
   summaryLabel: {
-    fontSize: 12,
     color: COLORS.white,
     opacity: 0.9,
   },
   summaryDivider: {
     width: 1,
-    height: 40,
     backgroundColor: COLORS.white,
     opacity: 0.3,
   },

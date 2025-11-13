@@ -27,6 +27,8 @@ export default function ProfileScreen() {
   const clearActiveParking = useParkingStore((state) => state.clearActiveParkingSession);
   const router = useRouter();
 
+  const { t } = useTranslation();
+
   // Get accessibility settings from store
   const textSize = useAccessibilityStore((state) => state.textSize);
   const iconSize = useAccessibilityStore((state) => state.iconSize);
@@ -38,18 +40,9 @@ export default function ProfileScreen() {
   // Get scaled sizes for this screen's UI
   const { text, icon } = useScaledSizes();
 
-  // Verify the functions exist
-  console.log('text function:', typeof text);
-  console.log('icon function:', typeof icon);
-  console.log('textSize:', textSize);
-
-  const { t } = useTranslation();
-
   // Create dynamic styles based on text size
   const dynamicStyles = useMemo(() => {
-    // Safety check
     if (typeof text !== 'function') {
-      console.error('text is not a function!');
       return {
         avatarText: { fontSize: 36 },
         name: { fontSize: 22 },
@@ -86,40 +79,41 @@ export default function ProfileScreen() {
     return `${names[0][0]}`.toUpperCase();
   };
 
-  // Handle Logout
+  // UPDATED: Handle Logout with translated alert
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-          clearActiveParking();
-          router.replace('/login');
+    Alert.alert(
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
         },
-      },
-    ]);
+        {
+          text: t('profile.logout'),
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            clearActiveParking();
+            router.replace('/login');
+          },
+        },
+      ]
+    );
   };
 
   // Handle Text Size Change
   const handleTextSizeChange = (size: TextSizeType) => {
-    console.log('🔵 Text size clicked:', size);
     setTextSize(size);
   };
 
   // Handle Icon Size Change
   const handleIconSizeChange = (size: IconSizeType) => {
-    console.log('🔵 Icon size clicked:', size);
     setIconSize(size);
   };
 
   // Handle Language Change
   const handleLanguageChange = (newLanguage: LanguageType) => {
-    console.log('🔵 Language clicked:', newLanguage);
     setLanguage(newLanguage);
   };
 
@@ -138,10 +132,7 @@ export default function ProfileScreen() {
     return (
       <TouchableOpacity 
         style={styles.radioOption} 
-        onPress={() => {
-          console.log(`✅ Radio pressed: ${label}`);
-          onSelect(value);
-        }}
+        onPress={() => onSelect(value)}
         activeOpacity={0.7}
       >
         <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
@@ -167,10 +158,7 @@ export default function ProfileScreen() {
     return (
       <TouchableOpacity
         style={[styles.iconButtonOption, selected && styles.iconButtonSelected]}
-        onPress={() => {
-          console.log(`✅ Icon button pressed: ${label}`);
-          onSelect(value);
-        }}
+        onPress={() => onSelect(value)}
         activeOpacity={0.7}
       >
         <Ionicons
@@ -204,7 +192,7 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <Text style={[styles.name, dynamicStyles.name]}>
-            {user?.user_name || 'User Name'}
+            {user?.user_name || t('profile.title')}
           </Text>
           <Text style={[styles.email, dynamicStyles.email]}>
             {user?.user_email || 'user@email.com'}
@@ -215,37 +203,33 @@ export default function ProfileScreen() {
 
         {/* --- Accessibility Section --- */}
         <View style={styles.section}>
+          {/* TRANSLATED: Section title */}
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
-            Accessibility
+            {t('profile.accessibility')}
           </Text>
-
-          {/* Debug Info - Remove this after testing */}
-          {/* <View style={{ backgroundColor: '#E3F2FD', padding: 10, marginBottom: 15, borderRadius: 5 }}>
-            <Text style={{ fontSize: 12, color: '#1976D2' }}>
-              📊 Current: {textSize} | 16px → {text(16)}px
-            </Text>
-          </View> */}
 
           {/* Text Size Options */}
           <View style={styles.optionGroup}>
+            {/*  TRANSLATED: Option label */}
             <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
-              Text size
+              {t('profile.textSize')}
             </Text>
             <View style={styles.radioContainer}>
+              {/*  TRANSLATED: Size options */}
               <RadioButton
-                label="Small"
+                label={t('profile.small')}
                 value="small"
                 selected={textSize === 'small'}
                 onSelect={handleTextSizeChange}
               />
               <RadioButton
-                label="Medium"
+                label={t('profile.medium')}
                 value="medium"
                 selected={textSize === 'medium'}
                 onSelect={handleTextSizeChange}
               />
               <RadioButton
-                label="Large"
+                label={t('profile.large')}
                 value="large"
                 selected={textSize === 'large'}
                 onSelect={handleTextSizeChange}
@@ -255,24 +239,26 @@ export default function ProfileScreen() {
 
           {/* Icon Size Options */}
           <View style={styles.optionGroup}>
+            {/* TRANSLATED: Option label */}
             <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
-              Icon size
+              {t('profile.iconSize')}
             </Text>
             <View style={styles.iconButtonContainer}>
+              {/* TRANSLATED: Size options */}
               <IconButton
-                label="Default"
+                label={t('profile.default')}
                 value="default"
                 selected={iconSize === 'default'}
                 onSelect={handleIconSizeChange}
               />
               <IconButton
-                label="Medium"
+                label={t('profile.medium')}
                 value="medium"
                 selected={iconSize === 'medium'}
                 onSelect={handleIconSizeChange}
               />
               <IconButton
-                label="Large"
+                label={t('profile.large')}
                 value="large"
                 selected={iconSize === 'large'}
                 onSelect={handleIconSizeChange}
@@ -285,24 +271,27 @@ export default function ProfileScreen() {
 
         {/* --- Preferences Section --- */}
         <View style={styles.section}>
+          {/* TRANSLATED: Section title */}
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
-            Preferences
+            {t('profile.preferences')}
           </Text>
 
           {/* Language Options */}
           <View style={styles.optionGroup}>
+            {/* TRANSLATED: Option label */}
             <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
-              Language
+              {t('profile.language')}
             </Text>
             <View style={styles.languageContainer}>
+              {/* TRANSLATED: Language options */}
               <RadioButton
-                label="English"
+                label={t('profile.english')}
                 value="en"
                 selected={language === 'en'}
                 onSelect={handleLanguageChange}
               />
               <RadioButton
-                label="Te Reo Māori"
+                label={t('profile.maori')}
                 value="ma"
                 selected={language === 'ma'}
                 onSelect={handleLanguageChange}
@@ -321,6 +310,7 @@ export default function ProfileScreen() {
             color={COLORS.white} 
             style={{ marginRight: 8 }} 
           />
+          {/*  TRANSLATED: Logout text */}
           <Text style={[styles.logoutButtonText, dynamicStyles.logoutButtonText]}>
             {t('profile.logout')}
           </Text>
@@ -333,7 +323,7 @@ export default function ProfileScreen() {
   );
 }
 
-// --- Styles ---
+// --- Styles --- (unchanged)
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -345,8 +335,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
   },
-
-  // Profile Header
   profileHeader: {
     alignItems: 'center',
     paddingVertical: 30,
@@ -373,15 +361,11 @@ const styles = StyleSheet.create({
   email: {
     color: COLORS.gray,
   },
-
-  // Dividers
   divider: {
     height: 1,
     backgroundColor: '#E8E8E8',
     marginVertical: 0,
   },
-
-  // Sections
   section: {
     paddingHorizontal: 20,
     paddingVertical: 24,
@@ -392,8 +376,6 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
     marginBottom: 20,
   },
-
-  // Option Groups
   optionGroup: {
     marginBottom: 24,
   },
@@ -402,8 +384,6 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
     marginBottom: 14,
   },
-
-  // Radio Buttons (Text Size & Language)
   radioContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -443,8 +423,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: COLORS.dark,
   },
-
-  // Icon Buttons
   iconButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -476,8 +454,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '600',
   },
-
-  // Logout Button
   logoutButton: {
     marginHorizontal: 20,
     marginTop: 24,

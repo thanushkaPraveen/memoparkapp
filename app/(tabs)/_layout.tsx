@@ -1,29 +1,37 @@
-// app/(tabs)/_layout.tsx - 
+// app/(tabs)/_layout.tsx 
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import EmergencyCallButton from '../../components/EmergencyCallButton';
 import { COLORS } from '../../constants/colors';
 import { FONT_SIZES, ICON_SIZES } from '../../constants/typography';
 import { useScaledSizes } from '../../features/accessibility';
 
-// Temporary icon component wrapper 
 const IconImage = ({ source, color, size = 28 }: { source: any; color: string; size?: number }) => (
   <Image
     source={source}
-    style={[styles.icon, { width: size, height: size, tintColor: color }]}
+    style={{ width: size, height: size, tintColor: color }}
     resizeMode="contain"
   />
 );
 
 export default function TabLayout() {
-
+  const { t } = useTranslation();
   const { icon, text } = useScaledSizes();
 
-  const tabIconSize = icon(ICON_SIZES.ml);       // Main tab icons (scales with icon size setting)
-  const headerIconSize = icon(ICON_SIZES.md);    // Header icons
-  const labelSize = text(FONT_SIZES.caption);         // Tab bar label text (scales with text size setting)
+  const tabIconSize = icon(ICON_SIZES.ml);
+  const headerIconSize = icon(ICON_SIZES.md);
+  const labelSize = text(FONT_SIZES.caption);
   const headerTitleSize = text(FONT_SIZES.h5);
+
+  const scaledSpacing = useMemo(() => ({
+    tabBarHeight: 70 + (icon(1) - 1) * 15,
+    tabBarPaddingBottom: 10 + (icon(1) - 1) * 5,
+    headerButtonPadding: icon(4),
+    labelMarginTop: text(6),                     
+    headerButtonMargin: icon(15),
+  }), [icon, text]);
 
   return (
     <Tabs
@@ -32,8 +40,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: COLORS.gray,
         tabBarStyle: {
           backgroundColor: COLORS.white,
-          height: 70,
-          paddingBottom: 10,
+          height: scaledSpacing.tabBarHeight,
+          paddingBottom: scaledSpacing.tabBarPaddingBottom,
         },
         headerStyle: {
           backgroundColor: COLORS.lightGray,
@@ -43,8 +51,8 @@ export default function TabLayout() {
         
         tabBarLabelStyle: {
           fontSize: labelSize,
+          marginTop: scaledSpacing.labelMarginTop, 
         },
-        // Scale header title text
         headerTitleStyle: {
           fontSize: headerTitleSize,
           fontWeight: '600',
@@ -54,8 +62,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: 'MemoParkApp',
-          tabBarLabel: 'Home',
+          title: t('home.title'),
+          tabBarLabel: t('common.home'),
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/home.png')}
@@ -69,8 +77,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="exercises"
         options={{
-          title: 'Exercises',
-          tabBarLabel: 'Exercises',
+          title: t('exercises.title'),
+          tabBarLabel: t('common.exercises'),
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/exercises.png')}
@@ -84,8 +92,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="score"
         options={{
-          title: 'Score',
-          tabBarLabel: 'score',
+          title: t('score.title'),
+          tabBarLabel: t('common.score'),
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/score.png')}
@@ -99,8 +107,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarLabel: 'Profile',
+          title: t('profile.title'),
+          tabBarLabel: t('common.profile'),
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/profile.png')}

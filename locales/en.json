@@ -47,23 +47,152 @@
     "tryAgain": "Try again",
     "score": "Your score: {{score}}",
     "timeSpent": "Time spent: {{time}}",
-    "accuracy": "Accuracy: {{accuracy}}%"
+    "accuracy": "Accuracy: {{accuracy}}%",
+    "header": {
+      "title": "Memory Exercises",
+      "subtitle": "Improve your landmark navigation skills"
+    },
+    "categories": {
+      "all": "All",
+      "memory": "Memory",
+      "spatial": "Spatial",
+      "observation": "Observation",
+      "practice": "Practice"
+    },
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "howToPractice": "How to Practice",
+    "proTips": "Pro Tips",
+    "startExercise": "Start Exercise",
+    "quickTips": {
+      "title": "Quick Memory Tips",
+      "tips": [
+        "Always look back at your car before entering a building - this creates a stronger visual memory.",
+        "Use your phone to take a quick photo as backup, but try to rely on memory first.",
+        "Practice these techniques in familiar places to build confidence before using them in new locations."
+      ]
+    },
+    "landmarkChain": {
+      "title": "Landmark Chain Method",
+      "description": "Create memorable connections between landmarks to form a mental path back to your car.",
+      "steps": [
+        "When leaving your car, identify 3-5 distinct landmarks along your path",
+        "Create a story that connects each landmark in sequence",
+        "For example: \"I parked by the RED mailbox, walked past the TALL tree, entered through the BLUE door\"",
+        "Mentally rehearse the story 2-3 times as you walk",
+        "When returning, reverse the story to find your way back"
+      ],
+      "tips": [
+        "Use vivid, unusual details that stand out",
+        "Include colors, sizes, and unique features",
+        "The more absurd the story, the easier to remember"
+      ]
+    },
+    "photoMemory": {
+      "title": "Photo Memory Palace",
+      "description": "Use visual snapshots to create a mental map of your parking location.",
+      "steps": [
+        "Stand at your car and take a mental \"photo\" of the surrounding area",
+        "Turn 90 degrees and take another mental snapshot",
+        "Repeat until you have 4 mental photos (one for each direction)",
+        "As you walk away, look back and take one final mental photo",
+        "When returning, recall these images in reverse order"
+      ],
+      "tips": [
+        "Focus on permanent features, not other cars",
+        "Include building corners, signs, and painted markings",
+        "Close your eyes briefly to \"save\" each mental photo"
+      ]
+    },
+    "numberShape": {
+      "title": "Number-Shape System",
+      "description": "Convert parking information into memorable shapes and patterns.",
+      "steps": [
+        "Note your parking spot number or nearby identifiers",
+        "Convert numbers into shapes (1=pencil, 2=swan, 3=heart, etc.)",
+        "Create a visual scene with these shapes",
+        "Add the floor/level as a color to your scene",
+        "Review the complete image before leaving"
+      ],
+      "tips": [
+        "Use consistent number-shape associations",
+        "Make the mental image large and colorful",
+        "Add motion or interaction between shapes"
+      ]
+    },
+    "breadcrumb": {
+      "title": "Breadcrumb Technique",
+      "description": "Leave mental \"breadcrumbs\" at key decision points along your path.",
+      "steps": [
+        "At each turn or entrance, pause for 2 seconds",
+        "Note one unique feature at that spot",
+        "Say it out loud: \"Turning left at the yellow pillar\"",
+        "Count your turns as you go",
+        "When returning, count backwards and look for your markers"
+      ],
+      "tips": [
+        "Focus on immovable objects",
+        "Use multiple senses - note sounds and smells too",
+        "Practice this technique in familiar places first"
+      ]
+    },
+    "spatialGrid": {
+      "title": "Spatial Grid Practice",
+      "description": "Develop your mental mapping abilities with this visualization exercise.",
+      "steps": [
+        "Before parking, visualize the area as a grid from above",
+        "Place your car on this mental grid",
+        "Identify your destination on the grid",
+        "Trace your path on the mental grid as you walk",
+        "Practice recreating the grid from memory at your destination",
+        "Use the grid to navigate back without looking at landmarks"
+      ],
+      "tips": [
+        "Start with simple rectangular parking lots",
+        "Use cardinal directions (N, S, E, W) as anchors",
+        "Practice in familiar locations before trying new places"
+      ]
+    },
+    "association": {
+      "title": "Association Anchors",
+      "description": "Create strong mental associations between landmarks and personal memories.",
+      "steps": [
+        "Identify 3 landmarks near your parking spot",
+        "Connect each landmark to a personal memory or person",
+        "Example: \"This red sign reminds me of mom's red coat\"",
+        "Create emotional connections to strengthen memory",
+        "Review associations before leaving the area"
+      ],
+      "tips": [
+        "Use positive, meaningful memories",
+        "The stronger the emotion, the better the recall",
+        "Link to people you know for better retention"
+      ]
+    }
   },
   "score": {
     "title": "Score",
-    "subtitle": "Track your progress",
     "totalScore": "Total Score",
-    "recentPerformance": "Recent Performance",
-    "accuracy": "Accuracy",
-    "completedExercises": "Completed Exercises",
-    "landmarkRecall": "Landmark Recall",
-    "pathQuality": "Path Quality",
-    "timeEfficiency": "Time Efficiency",
-    "overallScore": "Overall Score",
-    "excellent": "Excellent!",
-    "good": "Good",
-    "needsImprovement": "Needs Improvement",
-    "noScoresYet": "No scores yet. Complete exercises to see your progress.",
+    "timeFactor": "Time Factor",
+    "landmarks": "Landmarks",
+    "mapView": "Map View",
+    "screenTime": "Screen Time",
+    "latestSession": "Latest Session",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "yourProgress": "Your Progress",
+    "avgScore": "Avg Score",
+    "sessions": "Sessions",
+    "greatScores": "Great Scores",
+    "noScoresYet": "No Scores Yet",
+    "completeSessionPrompt": "Complete a parking session with navigation to see your scores here",
+    "unableToLoad": "Unable to Load Scores",
+    "dateUnknown": "Date Unknown",
+    "invalidDate": "Invalid Date",
     "viewDetails": "View Details"
   },
   "profile": {

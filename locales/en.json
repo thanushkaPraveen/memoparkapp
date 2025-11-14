@@ -28,7 +28,119 @@
     "noActiveSession": "No active parking session",
     "startSession": "Start Parking Session",
     "sessionTime": "Session started {{time}} ago",
-    "rememberLandmarks": "Remember these landmarks to find your car"
+    "rememberLandmarks": "Remember these landmarks to find your car",
+    "markers": {
+      "parkingLocation": "Parking Location",
+      "parkedCar": "Your Parked Car"
+    },
+    "arrived": {
+      "title": "Arrived!",
+      "message": "You have reached your car!",
+      "endSession": "End Session"
+    },
+    "errors": {
+      "locationRequired": "Location permission is required.",
+      "failedToGetLocation": "Failed to get your location.",
+      "cameraRollRequired": "Camera roll permission is required.",
+      "cameraRequired": "Camera permission is required.",
+      "selectLocation": "Please select a location on the map.",
+      "invalidCoordinates": "Invalid location coordinates. Please try selecting again.",
+      "failedToSave": "Failed to save parking location.",
+      "failedToUpdate": "Failed to update parking session.",
+      "unableToNavigate": "Unable to start navigation. Location not available.",
+      "invalidParkingCoordinates": "Invalid parking location coordinates.",
+      "failedToEndSession": "Failed to end parking session.",
+      "failedToEndNavigation": "Failed to end navigation session.",
+      "failedToSaveLandmarks": "Failed to save landmarks."
+    },
+    "photo": {
+      "title": "Add Photo",
+      "chooseOption": "Choose an option",
+      "takePhoto": "Take Photo",
+      "chooseGallery": "Choose from Gallery"
+    },
+    "session": {
+      "cleared": "Note",
+      "clearedMessage": "Parking session cleared!"
+    },
+    "navigation": {
+      "title": "Navigation Started",
+      "started": "Follow the walking path to reach your car.",
+      "startedWithTime": "Follow the walking path to reach your car. The route shows the estimated walking time.",
+      "walkTime": "{{time}} min walk",
+      "distanceToCar": "{{distance}}m to your car",
+      "toCar": "to your car"
+    },
+    "landmarks": {
+      "addTitle": "Add Landmarks",
+      "addMessage": "Mark up to {{count}} landmarks along your route to help you remember the way to your car.",
+      "limitReached": "Limit Reached",
+      "maxLandmarks": "You can only add up to {{count}} landmarks.",
+      "landmarkNumber": "Landmark {{number}}",
+      "noLandmarks": "No Landmarks",
+      "addAtLeastOne": "Please add at least one landmark before saving.",
+      "savedSuccess": "{{count}} landmark{{plural}} saved successfully!",
+      "adding": "Add landmarks ({{current}}/{{max}})",
+      "addSome": "Add Some",
+      "saveAll": "Save All"
+    },
+    "save": {
+      "button": "Save my car here",
+      "optionalDetails": "Optional Details",
+      "photo": "Photo",
+      "whereIsCar": "Where is the car?",
+      "roadside": "Roadside",
+      "insideBuilding": "Inside building",
+      "streetLevel": "Street Level / Area",
+      "streetLevelPlaceholder": "e.g., Near the red mailbox",
+      "levelFloor": "Level / Floor",
+      "levelPlaceholder": "e.g., 1",
+      "parkingSlot": "Parking Slot",
+      "slotPlaceholder": "e.g., D-42",
+      "note": "Note",
+      "notePlaceholder": "Add any additional notes...",
+      "skip": "Skip",
+      "saveDetails": "Save details",
+      "saving": "Saving..."
+    },
+    "details": {
+      "insideBuilding": "Inside building",
+      "roadside": "Roadside",
+      "levelFloor": "Level/Floor",
+      "note": "Note",
+      "update": "Update",
+      "clear": "Clear",
+      "findMyCar": "Find my car",
+      "addLandmark": "Add Landmark"
+    },
+    "clear": {
+      "title": "Clear Parking",
+      "confirmMessage": "Are you sure you want to end this parking session?",
+      "endSession": "End Session"
+    },
+    "update": {
+      "title": "Update",
+      "comingSoon": "Update parking details feature coming soon!"
+    },
+    "mapType": {
+      "title": "Map Type",
+      "comingSoon": "Map type selector coming soon!"
+    },
+    "endNavigation": {
+      "title": "End Navigation",
+      "confirmMessage": "Are you sure you want to end this navigation session?",
+      "endSession": "End Session",
+      "button": "End Session"
+    },
+    "score": {
+      "title": "Session Complete!",
+      "timeFactor": "Time Factor",
+      "landmarkFactor": "Landmark Factor",
+      "landmarks": "Landmarks",
+      "mapViews": "Map Views",
+      "totalScore": "Total Score"
+    },
+    "unknownLocation": "Unknown Location"
   },
   "exercises": {
     "title": "Exercises",

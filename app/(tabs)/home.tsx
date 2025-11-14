@@ -3,7 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router'; // Or '@react-navigation/native'
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   AppState,
@@ -23,12 +24,16 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import { GOOGLE_MAPS_API_KEY_1 } from "../../constants/ appConstants";
 import { COLORS } from '../../constants/colors';
+import { useScaledSizes } from '../../features/accessibility';
 import { ParkingEvent, useParkingStore } from '../../features/parking/store';
 import axiosClient from '../../lib/axios';
 
 const GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_API_KEY_1; 
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
+  const { text, icon } = useScaledSizes();
+
   const mapRef = useRef<MapView>(null);
   
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -81,6 +86,72 @@ export default function HomeScreen() {
 
   // Get parking session from store
   const { activeParkingSession, isLoading, fetchActiveParkingSession } = useParkingStore();
+
+   // Scaled sizes
+  const scaledSizes = useMemo(() => ({
+    // Icons
+    mapIcon: icon(24),
+    carMarker: icon(40),
+    landmarkMarker: icon(36),
+    landmarkInnerIcon: icon(20),
+    walkIcon: icon(24),
+    starIcon: icon(20),
+    stopIcon: icon(20),
+    cameraIcon: icon(40),
+    trophyIcon: icon(60),
+    photoPlaceholderIcon: icon(60),
+    
+    // Text
+    timeText: text(18),
+    timeSubText: text(12),
+    saveButtonText: text(18),
+    landmarkBannerText: text(14),
+    doneButtonText: text(14),
+    endSessionText: text(15),
+    sheetTitle: text(24),
+    label: text(14),
+    inputText: text(14),
+    toggleButtonText: text(13),
+    buttonText: text(15),
+    detailsLabel: text(18),
+    detailsText: text(14),
+    findCarText: text(16),
+    scoreTitle: text(24),
+    scoreMetricLabel: text(14),
+    scoreMetricValue: text(16),
+    scoreTotalLabel: text(14),
+    scoreValue: text(56),
+    scoreButtonText: text(16),
+    landmarkNumber: text(14),
+    
+    // Spacing
+    topButtonTop: Platform.OS === 'ios' ? 60 : 20,
+    timeBannerTop: Platform.OS === 'ios' ? 120 : 80,
+    buttonPadding: text(20),
+    buttonPaddingVertical: text(12),
+    modalPadding: text(24),
+    sectionMargin: text(20),
+    buttonHeight: text(56),
+    inputHeight: text(44),
+    iconButtonSize: icon(44),
+    photoBoxSize: text(80),
+    
+    // Handle bar and modal elements
+    handleBarWidth: text(40),
+    handleBarHeight: text(5),
+    handleBarMarginTop: text(12),
+    handleBarMarginBottom: text(8),
+    photoBoxBorderRadius: text(12),
+    toggleButtonPaddingVertical: text(10),
+    toggleButtonPaddingHorizontal: text(12),
+    borderRadius: text(8),
+    photoContainerHeight: text(200),
+    photoContainerBorderRadius: text(16),
+    photoContainerMargin: text(20),
+    detailsButtonHeight: text(44),
+    findCarButtonHeight: text(50),
+    
+  }), [text, icon]);
 
 // --- Keep Ref updated with State ---
   useEffect(() => {
@@ -952,8 +1023,8 @@ export default function HomeScreen() {
       >
         {/* Selected parking location marker (when saving new) */}
         {!hasActiveSession() && selectedLocation && (
-          <Marker coordinate={selectedLocation} title="Parking Location">
-            <Ionicons name="location" size={40} color={COLORS.primary} />
+          <Marker coordinate={selectedLocation} title={t('home.markers.parkingLocation')}>
+            <Ionicons name="location" size={scaledSizes.carMarker} color={COLORS.primary} />
           </Marker>
         )}
 
@@ -966,7 +1037,7 @@ export default function HomeScreen() {
             }}
             title="Your Parked Car"
           >
-            <Ionicons name="car" size={40} color="#FF5252" />
+            <Ionicons name="car" size={scaledSizes.carMarker} color="#FF5252" />
           </Marker>
         )}
 
@@ -983,11 +1054,15 @@ export default function HomeScreen() {
           >
             <View style={[
               styles.landmarkMarker,
-              { backgroundColor: landmark.is_achieved ? '#4CAF50' : '#FFC107' }
+              { backgroundColor: landmark.is_achieved ? '#4CAF50' : '#FFC107', 
+                width: scaledSizes.landmarkMarker,
+                height: scaledSizes.landmarkMarker,
+                borderRadius: scaledSizes.landmarkMarker / 2
+               }
             ]}>
               <Ionicons
                 name={landmark.is_achieved ? 'checkmark' : 'star'}
-                size={20}
+                size={scaledSizes.landmarkInnerIcon}
                 color="white"
               />
             </View>
@@ -1096,18 +1171,18 @@ export default function HomeScreen() {
           style={styles.iconButton}
           onPress={() => Alert.alert('Map Type', 'Map type selector coming soon!')}
         >
-          <Ionicons name="layers-outline" size={24} color={COLORS.dark} />
+          <Ionicons name="layers-outline" size={scaledSizes.mapIcon} color={COLORS.dark} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.iconButton} onPress={centerOnUserLocation}>
-          <Ionicons name="navigate-outline" size={24} color={COLORS.dark} />
+          <Ionicons name="navigate-outline" size={scaledSizes.mapIcon} color={COLORS.dark} />
         </TouchableOpacity>
       </View>
 
       {/* Bottom recenter button */}
       <View style={styles.bottomRightButton}>
         <TouchableOpacity style={styles.iconButton} onPress={centerOnUserLocation}>
-          <Ionicons name="locate" size={24} color={COLORS.dark} />
+          <Ionicons name="locate" size={scaledSizes.mapIcon} color={COLORS.dark} />
         </TouchableOpacity>
       </View>
 
@@ -1126,9 +1201,14 @@ export default function HomeScreen() {
 
       {/* Save button (no active session) */}
       {!hasActiveSession() && (
-        <View style={styles.saveButtonContainer}>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveLocationPress}>
-            <Text style={styles.saveButtonText}>Save my car here</Text>
+         <View style={styles.saveButtonContainer}>
+          <TouchableOpacity 
+            style={[styles.saveButton, { height: scaledSizes.buttonHeight }]} 
+            onPress={handleSaveLocationPress}
+          >
+            <Text style={[styles.saveButtonText, { fontSize: scaledSizes.saveButtonText }]}>
+              {t('home.save.button')}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -1188,10 +1268,10 @@ export default function HomeScreen() {
             <View style={styles.handleBar} />
 
             <ScrollView style={styles.bottomSheetContent} showsVerticalScrollIndicator={false}>
-              <Text style={styles.sheetTitle}>Optional Details</Text>
+              <Text style={styles.sheetTitle}>{t('home.save.optionalDetails')}</Text>
 
               <View style={styles.section}>
-                <Text style={styles.label}>Photo</Text>
+                <Text style={styles.label}>{t('home.save.photo')}</Text>
                 <TouchableOpacity style={styles.photoBox} onPress={() => pickImage(false)}>
                   {photo ? (
                     <Image source={{ uri: photo }} style={styles.photoImage} />
@@ -1202,7 +1282,7 @@ export default function HomeScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.label}>Where is the car?</Text>
+                <Text style={styles.label}>{t('home.save.whereIsCar')}</Text>
                 <View style={styles.toggleContainer}>
                   <TouchableOpacity
                     style={[
@@ -1217,7 +1297,7 @@ export default function HomeScreen() {
                         whereIsTheCar === 'outside' && styles.toggleButtonTextActive,
                       ]}
                     >
-                      Roadside
+                      {t('home.save.roadside')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -1233,7 +1313,7 @@ export default function HomeScreen() {
                         whereIsTheCar === 'inside' && styles.toggleButtonTextActive,
                       ]}
                     >
-                      Inside building
+                      {t('home.save.insideBuilding')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -1241,34 +1321,34 @@ export default function HomeScreen() {
 
               {whereIsTheCar === 'outside' ? (
                 <View style={styles.section}>
-                  <Text style={styles.label}>Street Level / Area</Text>
+                  <Text style={styles.label}>{t('home.save.streetLevel')}</Text>
                   <TextInput
                     style={styles.input}
                     value={parkingSlot}
                     onChangeText={setParkingSlot}
-                    placeholder="e.g., Near the red mailbox"
+                    placeholder={t('home.save.streetLevelPlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                   />
                 </View>
               ) : (
                 <View style={styles.levelsRow}>
                   <View style={styles.levelInput}>
-                    <Text style={styles.label}>Level / Floor</Text>
+                    <Text style={styles.label}>{t('home.save.levelFloor')}</Text>
                     <TextInput
                       style={styles.input}
                       value={insideLevel}
                       onChangeText={setInsideLevel}
-                      placeholder="e.g., 1"
+                      placeholder={t('home.save.levelPlaceholder')}
                       placeholderTextColor={COLORS.placeholderText}
                     />
                   </View>
                   <View style={styles.levelInput}>
-                    <Text style={styles.label}>Parking Slot</Text>
+                    <Text style={styles.label}>{t('home.save.parkingSlot')}</Text>
                     <TextInput
                       style={styles.input}
                       value={parkingSlot}
                       onChangeText={setParkingSlot}
-                      placeholder="e.g., D-42"
+                      placeholder={t('home.save.slotPlaceholder')}
                       placeholderTextColor={COLORS.placeholderText}
                     />
                   </View>
@@ -1276,12 +1356,12 @@ export default function HomeScreen() {
               )}
 
               <View style={styles.section}>
-                <Text style={styles.label}>Note</Text>
+                <Text style={styles.label}>{t('home.save.note')}</Text>
                 <TextInput
                   style={[styles.input, styles.noteInput]}
                   value={note}
                   onChangeText={setNote}
-                  placeholder="Add any additional notes..."
+                  placeholder={t('home.save.notePlaceholder')}
                   placeholderTextColor={COLORS.placeholderText}
                   multiline
                   numberOfLines={3}
@@ -1295,7 +1375,7 @@ export default function HomeScreen() {
                   onPress={handleSaveParking}
                   disabled={isSaving}
                 >
-                  <Text style={styles.skipButtonText}>Skip</Text>
+                  <Text style={styles.skipButtonText}>{t('home.save.skip')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -1304,7 +1384,7 @@ export default function HomeScreen() {
                   disabled={isSaving}
                 >
                   <Text style={styles.saveDetailsButtonText}>
-                    {isSaving ? 'Saving...' : 'Save details'}
+                    {isSaving ? t('home.save.saving') : t('home.save.saveDetails')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1359,25 +1439,25 @@ export default function HomeScreen() {
                     style={styles.detailsButton}
                     onPress={handleUpdateParking}
                   >
-                    <Text style={styles.detailsButtonText}>Update</Text>
+                    <Text style={styles.detailsButtonText}>{t('home.details.update')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.detailsButton}
                     onPress={handleClearParking}
                   >
-                    <Text style={styles.detailsButtonText}>Clear</Text>
+                    <Text style={styles.detailsButtonText}>{t('home.details.clear')}</Text>
                   </TouchableOpacity>
                 </View>
 
                 <TouchableOpacity style={styles.findCarButton} onPress={handleFindMyCar}>
-                  <Text style={styles.findCarButtonText}>Find my car</Text>
+                  <Text style={styles.findCarButtonText}>{t('home.details.findMyCar')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.findCarButton, styles.addLandmarkButton]}
                   onPress={handleAddLandmark}
                 >
-                  <Text style={styles.findCarButtonText}>Add Landmark</Text>
+                  <Text style={styles.findCarButtonText}>{t('home.details.addLandmark')}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -1548,9 +1628,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   landmarkMarker: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    // width: 36,
+    // height: 36,
+    // borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,

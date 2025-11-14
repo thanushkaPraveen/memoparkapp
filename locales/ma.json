@@ -28,7 +28,119 @@
     "noActiveSession": "Kāore he wā pāka hohe",
     "startSession": "Tīmata Wā Pāka",
     "sessionTime": "I tīmata te wā {{time}} i mua",
-    "rememberLandmarks": "Maharatia ēnei tohu whenua hei kimi i tō waka"
+    "rememberLandmarks": "Maharatia ēnei tohu whenua hei kimi i tō waka",
+    "markers": {
+      "parkingLocation": "Wāhi Pāka",
+      "parkedCar": "Tō Waka Kua Pāka"
+    },
+    "arrived": {
+      "title": "Kua Tae Mai!",
+      "message": "Kua tae koe ki tō waka!",
+      "endSession": "Whakamutu Wā"
+    },
+    "errors": {
+      "locationRequired": "Me tono te whakaaetanga wāhi.",
+      "failedToGetLocation": "I rahua te tiki i tō wāhi.",
+      "cameraRollRequired": "Me tono te whakaaetanga whare kāmera.",
+      "cameraRequired": "Me tono te whakaaetanga kāmera.",
+      "selectLocation": "Tēnā kōwhiria tētahi wāhi i runga i te mahere.",
+      "invalidCoordinates": "He muhu ngā tauwehe wāhi. Tēnā ngana anō ki te kōwhiri.",
+      "failedToSave": "I rahua te tiaki i te wāhi pāka.",
+      "failedToUpdate": "I rahua te whakahōu i te wā pāka.",
+      "unableToNavigate": "Kāore e taea te tīmata whakatere. Kāore te wāhi e wātea ana.",
+      "invalidParkingCoordinates": "He muhu ngā tauwehe wāhi pāka.",
+      "failedToEndSession": "I rahua te whakamutu i te wā pāka.",
+      "failedToEndNavigation": "I rahua te whakamutu i te wā whakatere.",
+      "failedToSaveLandmarks": "I rahua te tiaki i ngā tohu whenua."
+    },
+    "photo": {
+      "title": "Tāpiri Whakaahua",
+      "chooseOption": "Kōwhiria tētahi kōwhiringa",
+      "takePhoto": "Tangohia te Whakaahua",
+      "chooseGallery": "Kōwhiria mai i te Whare Whakaaturanga"
+    },
+    "session": {
+      "cleared": "Kōrero",
+      "clearedMessage": "Kua whakakorehia te wā pāka!"
+    },
+    "navigation": {
+      "title": "Kua Tīmata te Whakatere",
+      "started": "Whāia te ara haerenga kia tae ki tō waka.",
+      "startedWithTime": "Whāia te ara haerenga kia tae ki tō waka. Ko te ara e whakaatu ana i te wā haere tata.",
+      "walkTime": "{{time}} meneti haere",
+      "distanceToCar": "{{distance}}m ki tō waka",
+      "toCar": "ki tō waka"
+    },
+    "landmarks": {
+      "addTitle": "Tāpiri Tohu Whenua",
+      "addMessage": "Tohua tae atu ki te {{count}} tohu whenua i tō ara hei āwhina i a koe ki te mahara ki te ara ki tō waka.",
+      "limitReached": "Kua Tae ki te Rohe",
+      "maxLandmarks": "Ka taea anake e koe te tāpiri tae atu ki te {{count}} tohu whenua.",
+      "landmarkNumber": "Tohu Whenua {{number}}",
+      "noLandmarks": "Kāore he Tohu Whenua",
+      "addAtLeastOne": "Tēnā tāpirihia kia kotahi tohu whenua i mua i te tiaki.",
+      "savedSuccess": "{{count}} tohu whenua{{plural}} kua tiakina!",
+      "adding": "Tāpiri tohu whenua ({{current}}/{{max}})",
+      "addSome": "Tāpiri Ētahi",
+      "saveAll": "Tiaki Katoa"
+    },
+    "save": {
+      "button": "Tiaki taku waka ki konei",
+      "optionalDetails": "Ngā Taipitopito Kōwhiringa",
+      "photo": "Whakaahua",
+      "whereIsCar": "Kei hea te waka?",
+      "roadside": "Taha Ara",
+      "insideBuilding": "I roto i te whare",
+      "streetLevel": "Taumata Ara / Rohe",
+      "streetLevelPlaceholder": "hei tauira, Tata ki te pouaka mēra whero",
+      "levelFloor": "Taumata / Papa",
+      "levelPlaceholder": "hei tauira, 1",
+      "parkingSlot": "Wāhi Pāka",
+      "slotPlaceholder": "hei tauira, D-42",
+      "note": "Tuhipoka",
+      "notePlaceholder": "Tāpirihia ngā tuhipoka anō...",
+      "skip": "Peke",
+      "saveDetails": "Tiaki taipitopito",
+      "saving": "E tiaki ana..."
+    },
+    "details": {
+      "insideBuilding": "I roto i te whare",
+      "roadside": "Taha Ara",
+      "levelFloor": "Taumata/Papa",
+      "note": "Tuhipoka",
+      "update": "Whakahōu",
+      "clear": "Whakakore",
+      "findMyCar": "Kimihia taku waka",
+      "addLandmark": "Tāpiri Tohu Whenua"
+    },
+    "clear": {
+      "title": "Whakakore Pāka",
+      "confirmMessage": "E tino hiahia ana koe ki te whakamutu i tēnei wā pāka?",
+      "endSession": "Whakamutu Wā"
+    },
+    "update": {
+      "title": "Whakahōu",
+      "comingSoon": "Ka puta tata te āhuatanga whakahōu taipitopito pāka!"
+    },
+    "mapType": {
+      "title": "Momo Mahere",
+      "comingSoon": "Ka puta tata te kaiwhiri momo mahere!"
+    },
+    "endNavigation": {
+      "title": "Whakamutu Whakatere",
+      "confirmMessage": "E tino hiahia ana koe ki te whakamutu i tēnei wā whakatere?",
+      "endSession": "Whakamutu Wā",
+      "button": "Whakamutu Wā"
+    },
+    "score": {
+      "title": "Kua Oti te Wā!",
+      "timeFactor": "Āhuatanga Wā",
+      "landmarkFactor": "Āhuatanga Tohu Whenua",
+      "landmarks": "Tohu Whenua",
+      "mapViews": "Tirohanga Mahere",
+      "totalScore": "Tohu Tapeke"
+    },
+    "unknownLocation": "Wāhi Kāore e Mōhiotia"
   },
   "exercises": {
     "title": "Ngā Whakamātautau",

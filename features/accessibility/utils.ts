@@ -3,7 +3,7 @@ import type { IconSizeType, TextSizeType } from './store';
 const TEXT_SIZE_MULTIPLIERS: Record<TextSizeType, number> = {
   small: 0.85,
   medium: 1.0,
-  large: 1.2,
+  large: 1.4,
 };
 
 const ICON_SIZE_MULTIPLIERS: Record<IconSizeType, number> = {

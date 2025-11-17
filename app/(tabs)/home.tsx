@@ -1495,11 +1495,23 @@ export default function HomeScreen() {
         onRequestClose={() => setShowParkingDetailsModal(false)}
       >
         <View style={styles.detailsModalContainer}>
-          <View style={styles.detailsModalContent}>
+          <View style={[
+            styles.detailsModalContent,
+            { 
+              padding: scaledSizes.modalPadding,
+              borderRadius: text(20),
+            }
+          ]}>
             {session && (
               <>
-                {/* Photo */}
-                <View style={styles.detailsPhotoContainer}>
+                <View style={[
+                  styles.detailsPhotoContainer,
+                  {
+                    height: scaledSizes.photoContainerHeight,
+                    borderRadius: scaledSizes.photoContainerBorderRadius,
+                    marginBottom: scaledSizes.photoContainerMargin,
+                  }
+                ]}>
                   {session.photo_url ? (
                     <Image
                       source={{ uri: session.photo_url }}
@@ -1507,51 +1519,111 @@ export default function HomeScreen() {
                     />
                   ) : (
                     <View style={styles.detailsPhotoPlaceholder}>
-                      <Ionicons name="image-outline" size={60} color={COLORS.gray} />
+                      <Ionicons name="image-outline" size={scaledSizes.photoPlaceholderIcon} color={COLORS.gray} />
                     </View>
                   )}
                 </View>
 
-                {/* Details */}
-                <View style={styles.detailsInfo}>
-                  <Text style={styles.detailsLabel}>
-                    {session.parking_type === 'inside_building' ? 'Inside building' : 'Roadside'}
+                <View style={[styles.detailsInfo, { marginBottom: scaledSizes.sectionMargin }]}>
+                  <Text style={[
+                    styles.detailsLabel,
+                    { 
+                      fontSize: scaledSizes.detailsLabel,
+                      marginBottom: text(8),
+                    }
+                  ]}>
+                    {session.parking_type === 'inside_building' 
+                      ? t('home.details.insideBuilding')
+                      : t('home.details.roadside')}
                   </Text>
-                  <Text style={styles.detailsText}>
-                    <Text style={styles.detailsBold}>Level/Floor:</Text> {session.level_floor || 'N/A'}
+                  <Text style={[
+                    styles.detailsText,
+                    { 
+                      fontSize: scaledSizes.detailsText,
+                      marginBottom: text(4),
+                    }
+                  ]}>
+                    <Text style={styles.detailsBold}>{t('home.details.levelFloor')}:</Text>{' '}
+                    {session.level_floor || 'N/A'}
                   </Text>
                   {session.notes && (
-                    <Text style={styles.detailsText}>
-                      <Text style={styles.detailsBold}>Note:</Text> {session.notes}
+                    <Text style={[
+                      styles.detailsText,
+                      { 
+                        fontSize: scaledSizes.detailsText,
+                        marginBottom: text(4),
+                      }
+                    ]}>
+                      <Text style={styles.detailsBold}>{t('home.details.note')}:</Text>{' '}
+                      {session.notes}
                     </Text>
                   )}
                 </View>
 
-                {/* Buttons */}
-                <View style={styles.detailsButtons}>
+                <View style={[styles.detailsButtons, { gap: text(12), marginBottom: text(12) }]}>
                   <TouchableOpacity
-                    style={styles.detailsButton}
+                    style={[
+                      styles.detailsButton,
+                      { 
+                        height: scaledSizes.detailsButtonHeight,
+                        borderRadius: text(10),
+                        borderColor: COLORS.primary,
+                      }
+                    ]}
                     onPress={handleUpdateParking}
                   >
-                    <Text style={styles.detailsButtonText}>{t('home.details.update')}</Text>
+                    <Text style={[styles.detailsButtonText, { fontSize: scaledSizes.buttonText, color: COLORS.primary }]}>
+                      {t('home.details.update')}
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.detailsButton}
+                    style={[
+                      styles.detailsButton,
+                      { 
+                        height: scaledSizes.detailsButtonHeight,
+                        borderRadius: text(10),
+                        borderColor: COLORS.primary,
+                      }
+                    ]}
                     onPress={handleClearParking}
                   >
-                    <Text style={styles.detailsButtonText}>{t('home.details.clear')}</Text>
+                    <Text style={[styles.detailsButtonText, { fontSize: scaledSizes.buttonText, color: COLORS.primary }]}>
+                      {t('home.details.clear')}
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
-                <TouchableOpacity style={styles.findCarButton} onPress={handleFindMyCar}>
-                  <Text style={styles.findCarButtonText}>{t('home.details.findMyCar')}</Text>
+                <TouchableOpacity 
+                  style={[
+                    styles.findCarButton,
+                    { 
+                      height: scaledSizes.findCarButtonHeight,
+                      borderRadius: text(10),
+                      marginBottom: text(12),
+                      backgroundColor: COLORS.primary,
+                    }
+                  ]} 
+                  onPress={handleFindMyCar}
+                >
+                  <Text style={[styles.findCarButtonText, { fontSize: scaledSizes.findCarText }]}>
+                    {t('home.details.findMyCar')}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.findCarButton, styles.addLandmarkButton]}
+                  style={[
+                    styles.findCarButton,
+                    styles.addLandmarkButton,
+                    { 
+                      height: scaledSizes.findCarButtonHeight,
+                      borderRadius: text(10),
+                    }
+                  ]}
                   onPress={handleAddLandmark}
                 >
-                  <Text style={styles.findCarButtonText}>{t('home.details.addLandmark')}</Text>
+                  <Text style={[styles.findCarButtonText, { fontSize: scaledSizes.findCarText }]}>
+                    {t('home.details.addLandmark')}
+                  </Text>
                 </TouchableOpacity>
               </>
             )}

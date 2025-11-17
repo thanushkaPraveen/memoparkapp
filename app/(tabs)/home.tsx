@@ -1267,13 +1267,29 @@ export default function HomeScreen() {
           />
           
           <View style={styles.bottomSheet}>
-            <View style={styles.handleBar} />
+            {/* Handle bar with proper scaling */}
+            <View style={[
+              styles.handleBar,
+              {
+                width: scaledSizes.handleBarWidth,
+                height: scaledSizes.handleBarHeight,
+                marginTop: scaledSizes.handleBarMarginTop,
+                marginBottom: scaledSizes.handleBarMarginBottom,
+              }
+            ]} />
 
             <ScrollView style={styles.bottomSheetContent} showsVerticalScrollIndicator={false}>
-              <Text style={styles.sheetTitle}>{t('home.save.optionalDetails')}</Text>
+              <Text style={[styles.sheetTitle, { 
+                fontSize: scaledSizes.sheetTitle,
+                marginBottom: scaledSizes.sectionMargin,
+              }]}>
+                {t('home.save.optionalDetails')}
+              </Text>
 
               <View style={styles.section}>
-                <Text style={styles.label}>{t('home.save.photo')}</Text>
+                 <Text style={[styles.label, { fontSize: scaledSizes.label, marginBottom: text(8) }]}>
+                  {t('home.save.photo')}
+                </Text>
                 <TouchableOpacity style={styles.photoBox} onPress={() => pickImage(false)}>
                   {photo ? (
                     <Image source={{ uri: photo }} style={styles.photoImage} />
@@ -1283,19 +1299,30 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.section}>
-                <Text style={styles.label}>{t('home.save.whereIsCar')}</Text>
+               <View style={[styles.section, { marginBottom: scaledSizes.sectionMargin }]}>
+                <Text style={[styles.label, { fontSize: scaledSizes.label, marginBottom: text(8) }]}>
+                  {t('home.save.whereIsCar')}
+                </Text>
                 <View style={styles.toggleContainer}>
                   <TouchableOpacity
                     style={[
                       styles.toggleButton,
-                      whereIsTheCar === 'outside' && styles.toggleButtonActive,
+                      {
+                        paddingVertical: scaledSizes.toggleButtonPaddingVertical,
+                        paddingHorizontal: scaledSizes.toggleButtonPaddingHorizontal,
+                        borderRadius: scaledSizes.borderRadius,
+                      },
+                      whereIsTheCar === 'outside' && { 
+                        backgroundColor: COLORS.primary, 
+                        borderColor: COLORS.primary,
+                      },
                     ]}
                     onPress={() => setWhereIsTheCar('outside')}
                   >
                     <Text
                       style={[
                         styles.toggleButtonText,
+                        { fontSize: scaledSizes.toggleButtonText },
                         whereIsTheCar === 'outside' && styles.toggleButtonTextActive,
                       ]}
                     >
@@ -1305,13 +1332,22 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     style={[
                       styles.toggleButton,
-                      whereIsTheCar === 'inside' && styles.toggleButtonActive,
+                      {
+                        paddingVertical: scaledSizes.toggleButtonPaddingVertical,
+                        paddingHorizontal: scaledSizes.toggleButtonPaddingHorizontal,
+                        borderRadius: scaledSizes.borderRadius,
+                      },
+                      whereIsTheCar === 'inside' && { 
+                        backgroundColor: COLORS.primary, 
+                        borderColor: COLORS.primary,
+                      },
                     ]}
                     onPress={() => setWhereIsTheCar('inside')}
                   >
                     <Text
                       style={[
                         styles.toggleButtonText,
+                        { fontSize: scaledSizes.toggleButtonText },
                         whereIsTheCar === 'inside' && styles.toggleButtonTextActive,
                       ]}
                     >
@@ -1322,10 +1358,20 @@ export default function HomeScreen() {
               </View>
 
               {whereIsTheCar === 'outside' ? (
-                <View style={styles.section}>
-                  <Text style={styles.label}>{t('home.save.streetLevel')}</Text>
+                <View style={[styles.section, { marginBottom: scaledSizes.sectionMargin }]}>
+                  <Text style={[styles.label, { fontSize: scaledSizes.label, marginBottom: text(8) }]}>
+                    {t('home.save.streetLevel')}
+                  </Text>
                   <TextInput
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      { 
+                        height: scaledSizes.inputHeight,
+                        fontSize: scaledSizes.inputText,
+                        borderRadius: scaledSizes.borderRadius,
+                        paddingHorizontal: text(12),
+                      }
+                    ]}
                     value={parkingSlot}
                     onChangeText={setParkingSlot}
                     placeholder={t('home.save.streetLevelPlaceholder')}
@@ -1333,11 +1379,21 @@ export default function HomeScreen() {
                   />
                 </View>
               ) : (
-                <View style={styles.levelsRow}>
+                <View style={[styles.levelsRow, { marginBottom: scaledSizes.sectionMargin, gap: text(12) }]}>
                   <View style={styles.levelInput}>
-                    <Text style={styles.label}>{t('home.save.levelFloor')}</Text>
+                    <Text style={[styles.label, { fontSize: scaledSizes.label, marginBottom: text(8) }]}>
+                      {t('home.save.levelFloor')}
+                    </Text>
                     <TextInput
-                      style={styles.input}
+                      style={[
+                        styles.input,
+                        { 
+                          height: scaledSizes.inputHeight,
+                          fontSize: scaledSizes.inputText,
+                          borderRadius: scaledSizes.borderRadius,
+                          paddingHorizontal: text(12),
+                        }
+                      ]}
                       value={insideLevel}
                       onChangeText={setInsideLevel}
                       placeholder={t('home.save.levelPlaceholder')}
@@ -1345,9 +1401,19 @@ export default function HomeScreen() {
                     />
                   </View>
                   <View style={styles.levelInput}>
-                    <Text style={styles.label}>{t('home.save.parkingSlot')}</Text>
+                    <Text style={[styles.label, { fontSize: scaledSizes.label, marginBottom: text(8) }]}>
+                      {t('home.save.parkingSlot')}
+                    </Text>
                     <TextInput
-                      style={styles.input}
+                      style={[
+                        styles.input,
+                        { 
+                          height: scaledSizes.inputHeight,
+                          fontSize: scaledSizes.inputText,
+                          borderRadius: scaledSizes.borderRadius,
+                          paddingHorizontal: text(12),
+                        }
+                      ]}
                       value={parkingSlot}
                       onChangeText={setParkingSlot}
                       placeholder={t('home.save.slotPlaceholder')}
@@ -1357,10 +1423,20 @@ export default function HomeScreen() {
                 </View>
               )}
 
-              <View style={styles.section}>
-                <Text style={styles.label}>{t('home.save.note')}</Text>
+              <View style={[styles.section, { marginBottom: scaledSizes.sectionMargin }]}>
+                <Text style={[styles.label, { fontSize: scaledSizes.label, marginBottom: text(8) }]}>
+                  {t('home.save.note')}
+                </Text>
                 <TextInput
-                  style={[styles.input, styles.noteInput]}
+                  style={[
+                    styles.input,
+                    styles.noteInput,
+                    { 
+                      fontSize: scaledSizes.inputText,
+                      borderRadius: scaledSizes.borderRadius,
+                      paddingHorizontal: text(12),
+                    }
+                  ]}
                   value={note}
                   onChangeText={setNote}
                   placeholder={t('home.save.notePlaceholder')}
@@ -1371,21 +1447,37 @@ export default function HomeScreen() {
                 />
               </View>
 
-              <View style={styles.buttonsContainer}>
+              <View style={[styles.buttonsContainer, { gap: text(12), marginTop: text(8), marginBottom: text(20) }]}>
                 <TouchableOpacity
-                  style={styles.skipButton}
+                  style={[
+                    styles.skipButton,
+                    { 
+                      height: scaledSizes.findCarButtonHeight,
+                      borderRadius: text(10),
+                      borderColor: COLORS.primary,
+                    }
+                  ]}
                   onPress={handleSaveParking}
                   disabled={isSaving}
                 >
-                  <Text style={styles.skipButtonText}>{t('home.save.skip')}</Text>
+                  <Text style={[styles.skipButtonText, { fontSize: scaledSizes.buttonText, color: COLORS.primary }]}>
+                    {t('home.save.skip')}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.saveDetailsButton, isSaving && styles.saveButtonDisabled]}
+                  style={[
+                    styles.saveDetailsButton , { backgroundColor: COLORS.primary },
+                    { 
+                      height: scaledSizes.findCarButtonHeight,
+                      borderRadius: text(10),
+                    },
+                    isSaving && styles.saveButtonDisabled
+                  ]}
                   onPress={handleSaveParking}
                   disabled={isSaving}
                 >
-                  <Text style={styles.saveDetailsButtonText}>
+                  <Text style={[styles.saveDetailsButtonText, { fontSize: scaledSizes.buttonText }]}>
                     {isSaving ? t('home.save.saving') : t('home.save.saveDetails')}
                   </Text>
                 </TouchableOpacity>
@@ -1725,7 +1817,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    maxHeight: '85%',
+    maxHeight: '99%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.25,

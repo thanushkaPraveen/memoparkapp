@@ -3,7 +3,7 @@ export const COLOR_THEMES = {
   standard: {
     primary: '#6998E6',  //#3374DB
     white: '#FFFFFF',
-    lightGray: '#F5F5F5',
+    lightGray: '#FFFFFF',
     gray: '#8A8A8A',
     dark: '#333333',
     link: '#007BFF',

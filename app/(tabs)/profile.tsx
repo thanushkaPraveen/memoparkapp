@@ -11,13 +11,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../constants/colors';
+import { type ColorThemeType } from '../../constants/colors';
 import {
   useAccessibilityStore,
   useScaledSizes,
+  useThemeColors,
   type IconSizeType,
   type LanguageType,
-  type TextSizeType
+  type TextSizeType,
 } from '../../features/accessibility';
 import { useAuthStore } from '../../features/auth/store';
 import { useParkingStore } from '../../features/parking/store';
@@ -33,12 +34,22 @@ export default function ProfileScreen() {
   const textSize = useAccessibilityStore((state) => state.textSize);
   const iconSize = useAccessibilityStore((state) => state.iconSize);
   const language = useAccessibilityStore((state) => state.language);
+  const colorTheme = useAccessibilityStore((state) => state.colorTheme);
+  
   const setTextSize = useAccessibilityStore((state) => state.setTextSize);
   const setIconSize = useAccessibilityStore((state) => state.setIconSize);
   const setLanguage = useAccessibilityStore((state) => state.setLanguage);
+  const setColorTheme = useAccessibilityStore((state) => state.setColorTheme);
+
+  // Get themed colors
+  const themedColors = useThemeColors();
 
   // Get scaled sizes for this screen's UI
   const { text, icon } = useScaledSizes();
+
+  const handleColorThemeChange = (theme: ColorThemeType) => {
+    setColorTheme(theme);
+  };
 
   // Create dynamic styles based on text size
   const dynamicStyles = useMemo(() => {
@@ -79,7 +90,7 @@ export default function ProfileScreen() {
     return `${names[0][0]}`.toUpperCase();
   };
 
-  // UPDATED: Handle Logout with translated alert
+  // Handle Logout with translated alert
   const handleLogout = async () => {
     Alert.alert(
       t('profile.logout'),
@@ -125,7 +136,7 @@ export default function ProfileScreen() {
     onSelect,
   }: {
     label: string;
-    value: TextSizeType | LanguageType;
+    value: TextSizeType | LanguageType | ColorThemeType;
     selected: boolean;
     onSelect: (value: any) => void;
   }) => {
@@ -135,10 +146,19 @@ export default function ProfileScreen() {
         onPress={() => onSelect(value)}
         activeOpacity={0.7}
       >
-        <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
-          {selected && <View style={styles.radioInner} />}
+        <View style={[
+          styles.radioOuter, 
+          { borderColor: selected ? themedColors.primary : themedColors.inputBorder }
+        ]}>
+          {selected && <View style={[styles.radioInner, { backgroundColor: themedColors.primary }]} />}
         </View>
-        <Text style={[styles.radioLabel, dynamicStyles.radioLabel]}>{label}</Text>
+        <Text style={[
+          styles.radioLabel, 
+          dynamicStyles.radioLabel,
+          { color: themedColors.dark }
+        ]}>
+          {label}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -157,19 +177,26 @@ export default function ProfileScreen() {
   }) => {
     return (
       <TouchableOpacity
-        style={[styles.iconButtonOption, selected && styles.iconButtonSelected]}
+        style={[
+          styles.iconButtonOption,
+          { 
+            borderColor: selected ? themedColors.primary : themedColors.inputBorder,
+            backgroundColor: selected ? '#E0E7FF' : themedColors.white
+          }
+        ]}
         onPress={() => onSelect(value)}
         activeOpacity={0.7}
       >
         <Ionicons
           name="happy-outline"
           size={selected ? 32 : 24}
-          color={selected ? COLORS.primary : COLORS.gray}
+          color={selected ? themedColors.primary : themedColors.gray}
         />
         <Text style={[
           styles.iconButtonLabel, 
           dynamicStyles.iconButtonLabel,
-          selected && styles.iconButtonLabelSelected
+          { color: selected ? themedColors.primary : themedColors.gray },
+          selected && { fontWeight: '600' }
         ]}>
           {label}
         </Text>
@@ -178,23 +205,23 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.safeArea}>
+    <View style={[styles.safeArea, { backgroundColor: themedColors.lightGray }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* --- Profile Header --- */}
-        <View style={styles.profileHeader}>
+        <View style={[styles.profileHeader, { backgroundColor: themedColors.white }]}>
           <View style={styles.avatar}>
             <Text style={[styles.avatarText, dynamicStyles.avatarText]}>
               {getInitials(user?.user_name)}
             </Text>
           </View>
-          <Text style={[styles.name, dynamicStyles.name]}>
+          <Text style={[styles.name, dynamicStyles.name, { color: themedColors.dark }]}>
             {user?.user_name || t('profile.title')}
           </Text>
-          <Text style={[styles.email, dynamicStyles.email]}>
+          <Text style={[styles.email, dynamicStyles.email, { color: themedColors.gray }]}>
             {user?.user_email || 'user@email.com'}
           </Text>
         </View>
@@ -202,20 +229,17 @@ export default function ProfileScreen() {
         <View style={styles.divider} />
 
         {/* --- Accessibility Section --- */}
-        <View style={styles.section}>
-          {/* TRANSLATED: Section title */}
-          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
+        <View style={[styles.section, { backgroundColor: themedColors.white }]}>
+          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle, { color: themedColors.dark }]}>
             {t('profile.accessibility')}
           </Text>
 
           {/* Text Size Options */}
           <View style={styles.optionGroup}>
-            {/*  TRANSLATED: Option label */}
-            <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
+            <Text style={[styles.optionLabel, dynamicStyles.optionLabel, { color: themedColors.dark }]}>
               {t('profile.textSize')}
             </Text>
             <View style={styles.radioContainer}>
-              {/*  TRANSLATED: Size options */}
               <RadioButton
                 label={t('profile.small')}
                 value="small"
@@ -239,12 +263,10 @@ export default function ProfileScreen() {
 
           {/* Icon Size Options */}
           <View style={styles.optionGroup}>
-            {/* TRANSLATED: Option label */}
-            <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
+            <Text style={[styles.optionLabel, dynamicStyles.optionLabel, { color: themedColors.dark }]}>
               {t('profile.iconSize')}
             </Text>
             <View style={styles.iconButtonContainer}>
-              {/* TRANSLATED: Size options */}
               <IconButton
                 label={t('profile.default')}
                 value="default"
@@ -270,20 +292,17 @@ export default function ProfileScreen() {
         <View style={styles.divider} />
 
         {/* --- Preferences Section --- */}
-        <View style={styles.section}>
-          {/* TRANSLATED: Section title */}
-          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>
+        <View style={[styles.section, { backgroundColor: themedColors.white }]}>
+          <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle, { color: themedColors.dark }]}>
             {t('profile.preferences')}
           </Text>
 
           {/* Language Options */}
           <View style={styles.optionGroup}>
-            {/* TRANSLATED: Option label */}
-            <Text style={[styles.optionLabel, dynamicStyles.optionLabel]}>
+            <Text style={[styles.optionLabel, dynamicStyles.optionLabel, { color: themedColors.dark }]}>
               {t('profile.language')}
             </Text>
             <View style={styles.languageContainer}>
-              {/* TRANSLATED: Language options */}
               <RadioButton
                 label={t('profile.english')}
                 value="en"
@@ -298,6 +317,107 @@ export default function ProfileScreen() {
               />
             </View>
           </View>
+
+          {/* Color Theme Options - VERTICAL LAYOUT */}
+          <View style={styles.optionGroup}>
+            <Text style={[styles.optionLabel, dynamicStyles.optionLabel, { color: themedColors.dark }]}>
+              {t('profile.colorTheme')}
+            </Text>
+            
+            <View style={styles.colorThemeContainer}>
+              {/* Standard Theme */}
+              <TouchableOpacity
+                style={styles.colorThemeOption}
+                onPress={() => handleColorThemeChange('standard')}
+                activeOpacity={0.7}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  { borderColor: colorTheme === 'standard' ? themedColors.primary : themedColors.inputBorder }
+                ]}>
+                  {colorTheme === 'standard' && (
+                    <View style={[styles.radioInner, { backgroundColor: themedColors.primary }]} />
+                  )}
+                </View>
+                <Text style={[
+                  styles.colorThemeLabel,
+                  dynamicStyles.radioLabel,
+                  { color: themedColors.dark }
+                ]}>
+                  {t('profile.standard')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* High Contrast Theme */}
+              <TouchableOpacity
+                style={styles.colorThemeOption}
+                onPress={() => handleColorThemeChange('highContrast')}
+                activeOpacity={0.7}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  { borderColor: colorTheme === 'highContrast' ? themedColors.primary : themedColors.inputBorder }
+                ]}>
+                  {colorTheme === 'highContrast' && (
+                    <View style={[styles.radioInner, { backgroundColor: themedColors.primary }]} />
+                  )}
+                </View>
+                <Text style={[
+                  styles.colorThemeLabel,
+                  dynamicStyles.radioLabel,
+                  { color: themedColors.dark }
+                ]}>
+                  {t('profile.highContrast')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Color Blind Friendly Theme */}
+              <TouchableOpacity
+                style={styles.colorThemeOption}
+                onPress={() => handleColorThemeChange('colorBlindFriendly')}
+                activeOpacity={0.7}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  { borderColor: colorTheme === 'colorBlindFriendly' ? themedColors.primary : themedColors.inputBorder }
+                ]}>
+                  {colorTheme === 'colorBlindFriendly' && (
+                    <View style={[styles.radioInner, { backgroundColor: themedColors.primary }]} />
+                  )}
+                </View>
+                <Text style={[
+                  styles.colorThemeLabel,
+                  dynamicStyles.radioLabel,
+                  { color: themedColors.dark }
+                ]}>
+                  {t('profile.colorBlindFriendly')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Dark Mode Theme */}
+              <TouchableOpacity
+                style={styles.colorThemeOption}
+                onPress={() => handleColorThemeChange('darkMode')}
+                activeOpacity={0.7}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  { borderColor: colorTheme === 'darkMode' ? themedColors.primary : themedColors.inputBorder }
+                ]}>
+                  {colorTheme === 'darkMode' && (
+                    <View style={[styles.radioInner, { backgroundColor: themedColors.primary }]} />
+                  )}
+                </View>
+                <Text style={[
+                  styles.colorThemeLabel,
+                  dynamicStyles.radioLabel,
+                  { color: themedColors.dark }
+                ]}>
+                  {t('profile.darkMode')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         <View style={styles.divider} />
@@ -307,11 +427,14 @@ export default function ProfileScreen() {
           <Ionicons 
             name="log-out-outline" 
             size={dynamicStyles.logoutIcon} 
-            color={COLORS.white} 
+            color={themedColors.white} 
             style={{ marginRight: 8 }} 
           />
-          {/*  TRANSLATED: Logout text */}
-          <Text style={[styles.logoutButtonText, dynamicStyles.logoutButtonText]}>
+          <Text style={[
+            styles.logoutButtonText, 
+            dynamicStyles.logoutButtonText,
+            { color: themedColors.white }
+          ]}>
             {t('profile.logout')}
           </Text>
         </TouchableOpacity>
@@ -323,11 +446,10 @@ export default function ProfileScreen() {
   );
 }
 
-// --- Styles --- (unchanged)
+// --- Styles ---
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.lightGray,
   },
   scrollView: {
     flex: 1,
@@ -338,7 +460,6 @@ const styles = StyleSheet.create({
   profileHeader: {
     alignItems: 'center',
     paddingVertical: 30,
-    backgroundColor: COLORS.white,
   },
   avatar: {
     width: 90,
@@ -355,12 +476,9 @@ const styles = StyleSheet.create({
   },
   name: {
     fontWeight: '600',
-    color: COLORS.dark,
     marginBottom: 4,
   },
-  email: {
-    color: COLORS.gray,
-  },
+  email: {},
   divider: {
     height: 1,
     backgroundColor: '#E8E8E8',
@@ -369,11 +487,9 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 20,
     paddingVertical: 24,
-    backgroundColor: COLORS.white,
   },
   sectionTitle: {
     fontWeight: '700',
-    color: COLORS.dark,
     marginBottom: 20,
   },
   optionGroup: {
@@ -381,7 +497,6 @@ const styles = StyleSheet.create({
   },
   optionLabel: {
     fontWeight: '500',
-    color: COLORS.dark,
     marginBottom: 14,
   },
   radioContainer: {
@@ -405,23 +520,17 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: COLORS.inputBorder,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-  },
-  radioOuterSelected: {
-    borderColor: COLORS.primary,
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.primary,
   },
   radioLabel: {
     fontWeight: '400',
-    color: COLORS.dark,
   },
   iconButtonContainer: {
     flexDirection: 'row',
@@ -432,27 +541,31 @@ const styles = StyleSheet.create({
   iconButtonOption: {
     flex: 1,
     borderWidth: 2,
-    borderColor: COLORS.inputBorder,
     borderRadius: 12,
     paddingVertical: 18,
     paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
     minHeight: 120,
-  },
-  iconButtonSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#E0E7FF',
   },
   iconButtonLabel: {
     marginTop: 10,
     fontWeight: '500',
-    color: COLORS.gray,
   },
-  iconButtonLabelSelected: {
-    color: COLORS.primary,
-    fontWeight: '600',
+  // Color Theme Styles
+  colorThemeContainer: {
+    gap: 12,
+  },
+  colorThemeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  colorThemeLabel: {
+    fontWeight: '400',
+    marginLeft: 12,
+    flex: 1,
   },
   logoutButton: {
     marginHorizontal: 20,
@@ -472,7 +585,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   logoutButtonText: {
-    color: COLORS.white,
     fontWeight: '600',
   },
 });

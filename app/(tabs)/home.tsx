@@ -24,7 +24,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import { GOOGLE_MAPS_API_KEY_1 } from "../../constants/ appConstants";
 import { COLORS } from '../../constants/colors';
-import { useScaledSizes } from '../../features/accessibility';
+import { useScaledSizes, useThemeColors } from '../../features/accessibility';
 import { ParkingEvent, useParkingStore } from '../../features/parking/store';
 import axiosClient from '../../lib/axios';
 
@@ -74,6 +74,8 @@ export default function HomeScreen() {
     location_name: string;
     distance_from_parking: number;
   }>>([]);
+
+   const COLORS = useThemeColors();
 
   const MAX_LANDMARKS = 4;
 
@@ -1203,7 +1205,7 @@ export default function HomeScreen() {
       {!hasActiveSession() && (
          <View style={styles.saveButtonContainer}>
           <TouchableOpacity 
-            style={[styles.saveButton, { height: scaledSizes.buttonHeight }]} 
+            style={[styles.saveButton, { height: scaledSizes.buttonHeight, backgroundColor: COLORS.primary }]} 
             onPress={handleSaveLocationPress}
           >
             <Text style={[styles.saveButtonText, { fontSize: scaledSizes.saveButtonText }]}>

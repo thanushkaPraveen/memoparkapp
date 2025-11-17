@@ -1,3 +1,4 @@
+// hooks.ts
 import { useMemo } from 'react';
 import { useAccessibilityStore } from './store';
 import { scaleIcon, scaleText } from './utils';

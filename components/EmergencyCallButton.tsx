@@ -1,8 +1,7 @@
-// components/EmergencyCallButton.tsx - WITH ACCESSIBILITY SCALING
+// components/EmergencyCallButton.tsx - WITH ACCESSIBILITY SCALING AND THEME SUPPORT
 import React from 'react';
 import { Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS } from '../constants/colors';
-import { useScaledSizes } from '../features/accessibility';
+import { useScaledSizes, useThemeColors } from '../features/accessibility';
 import { useAuthStore } from '../features/auth/store';
 import { handleEmergencyCall } from '../utils/emergencyCall';
 
@@ -14,14 +13,18 @@ interface EmergencyCallButtonProps {
 
 const EmergencyCallButton: React.FC<EmergencyCallButtonProps> = ({
   size = 24,
-  color = COLORS.primary,
+  color,
   style,
 }) => {
   const user = useAuthStore((state) => state.user);
+  const themedColors = useThemeColors(); // Get themed colors
   
   const { icon } = useScaledSizes();
   
   const scaledSize = icon(size);
+  
+  // Use provided color or fall back to themed primary color
+  const buttonColor = color || themedColors.primary;
 
   const onPress = () => {
     handleEmergencyCall(user?.emergency_contacts);
@@ -40,7 +43,7 @@ const EmergencyCallButton: React.FC<EmergencyCallButtonProps> = ({
           { 
             width: scaledSize,   
             height: scaledSize, 
-            tintColor: color 
+            tintColor: buttonColor 
           }
         ]}
         resizeMode="contain"
@@ -55,7 +58,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   icon: {
-    
+    // Icon styles are applied inline
   },
 });
 

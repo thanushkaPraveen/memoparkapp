@@ -328,7 +328,12 @@
     "logoutConfirm": "E tino hiahia ana koe ki te takiputa?",
     "settings": "Ngā Tautuhinga",
     "about": "Mō",
-    "version": "Putanga {{version}}"
+    "version": "Putanga {{version}}",
+    "colorTheme": "Tae Tae",
+    "standard": "Paerewa",
+    "highContrast": "Rereke Tino",
+    "colorBlindFriendly": "Hoa Tae Matapo",
+    "darkMode": "Aratau Pouri"
   },
   "parking": {
     "saveLocation": "Tiaki Wāhi Pāka",

@@ -4,9 +4,8 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import EmergencyCallButton from '../../components/EmergencyCallButton';
-import { COLORS } from '../../constants/colors';
 import { FONT_SIZES, ICON_SIZES } from '../../constants/typography';
-import { useScaledSizes } from '../../features/accessibility';
+import { useScaledSizes, useThemeColors } from '../../features/accessibility';
 
 const IconImage = ({ source, color, size = 28 }: { source: any; color: string; size?: number }) => (
   <Image
@@ -19,6 +18,7 @@ const IconImage = ({ source, color, size = 28 }: { source: any; color: string; s
 export default function TabLayout() {
   const { t } = useTranslation();
   const { icon, text } = useScaledSizes();
+  const themedColors = useThemeColors(); // Get themed colors
 
   const tabIconSize = icon(ICON_SIZES.ml);
   const headerIconSize = icon(ICON_SIZES.md);
@@ -36,17 +36,17 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.gray,
+        tabBarActiveTintColor: themedColors.primary,
+        tabBarInactiveTintColor: themedColors.gray,
         tabBarStyle: {
-          backgroundColor: COLORS.white,
+          backgroundColor: themedColors.white,
           height: scaledSpacing.tabBarHeight,
           paddingBottom: scaledSpacing.tabBarPaddingBottom,
         },
         headerStyle: {
-          backgroundColor: COLORS.lightGray,
+          backgroundColor: themedColors.lightGray,
         },
-        headerTintColor: COLORS.dark,
+        headerTintColor: themedColors.dark,
         headerTitleAlign: 'center',
         
         tabBarLabelStyle: {
@@ -67,7 +67,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/home.png')}
-              color={focused ? COLORS.primary : COLORS.gray}
+              color={focused ? themedColors.primary : themedColors.gray}
               size={tabIconSize} 
             />
           ),
@@ -82,7 +82,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/exercises.png')}
-              color={focused ? COLORS.primary : COLORS.gray}
+              color={focused ? themedColors.primary : themedColors.gray}
               size={tabIconSize} 
             />
           ),
@@ -97,7 +97,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/score.png')}
-              color={focused ? COLORS.primary : COLORS.gray}
+              color={focused ? themedColors.primary : themedColors.gray}
               size={tabIconSize} 
             />
           ),
@@ -112,7 +112,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <IconImage
               source={require('../../assets/icons/profile.png')}
-              color={focused ? COLORS.primary : COLORS.gray}
+              color={focused ? themedColors.primary : themedColors.gray}
               size={tabIconSize} 
             />
           ),
@@ -124,7 +124,7 @@ export default function TabLayout() {
               >
                 <IconImage
                   source={require('../../assets/icons/edit.png')}
-                  color={COLORS.primary}
+                  color={themedColors.primary}
                   size={headerIconSize} 
                 />
               </TouchableOpacity>

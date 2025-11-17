@@ -329,7 +329,12 @@
     "logoutConfirm": "Are you sure you want to logout?",
     "settings": "Settings",
     "about": "About",
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "colorTheme": "Color Theme",
+    "standard": "Standard",
+    "highContrast": "High Contrast",
+    "colorBlindFriendly": "Color Blind Friendly",
+    "darkMode": "Dark Mode"
   },
   "parking": {
     "saveLocation": "Save Parking Location",
